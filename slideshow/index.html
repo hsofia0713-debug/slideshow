@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>院內公告系統</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=noto-sans-tc:300,400,500,700&display=swap" rel="stylesheet" />
+
+    <style>
+        :root {
+    --primary: #4a4e52; 
+    --primary-mid: #6c757d;
+    --primary-light: #adb5bd;
+    --primary-pale: #f8f9fa; /* 極淺灰底 */
+    --accent: #60666b;
+    
+    /* 增加白色系比例 */
+    --white: #ffffff;
+    --gray-50: #fdfcfb;  /* 近乎純白的奶油色 */
+    --gray-100: #f5f2ed; 
+    
+    /* 強化玻璃感陰影：更淡、範圍更廣 */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+    --shadow-md: 0 10px 30px rgba(0,0,0,0.08);
+    --shadow-lg: 0 15px 50px rgba(0,0,0,0.1);
+            --radius: 10px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans TC', "Microsoft JhengHei", Arial, sans-serif;
+            background: #f4f5f7;
+            color: #333a40;
+        }
+
+        /* ══ WARM MILK TEA BACKGROUND ══ */
+        body::before {
+    background:
+        radial-gradient(circle at 10% 15%, rgba(255, 255, 255, 1) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 55% at 90% 80%, rgba(200, 205, 215, 0.4) 0%, transparent 60%),
+        linear-gradient(150deg, #ffffff 0%, #eceef1 40%, #dee2e6 100%) !important;
+}
+
+        /* Floating warm orbs */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle 400px at 80% 20%, rgba(210, 215, 225, 0.4) 0%, transparent 70%),
+        radial-gradient(circle 300px at 15% 85%, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+            z-index: -1;
+            animation: floatOrbs 14s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatOrbs {
+            from { transform: translate(0, 0) scale(1); }
+            to   { transform: translate(18px, -18px) scale(1.06); }
+        }
+
+        /* Subtle dot grid */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image: radial-gradient(circle, rgba(140, 100, 60, 0.1) 1px, transparent 1px);
+            background-size: 36px 36px;
+            pointer-events: none;
+        }
+
+        /* ══ TOP HEADER BAR ══ */
+        .top-bar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            box-shadow: 0 2px 16px rgba(140,100,60,0.1);
+        }
+
+        .top-bar-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .brand-icon img {
+            width: 40px; height: 40px;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .brand-name {
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .brand-sub {
+            color: rgba(122,92,58,0.5);
+            font-size: 0.7rem;
+            margin-top: 1px;
+            letter-spacing: 0.08em;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-date {
+            color: rgba(90,58,30,0.55);
+            font-size: 0.8rem;
+        }
+
+        .btn-admin-toggle {
+            background: rgba(122,92,58,0.1);
+            border: 1px solid rgba(122,92,58,0.22);
+            color: var(--primary);
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-admin-toggle:hover {
+            background: rgba(122,92,58,0.18);
+            border-color: rgba(122,92,58,0.38);
+        }
+
+        /* ══ LAYOUT ══ */
+        .main-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 24px 20px;
+        }
+
+        /* ══ ADMIN PANEL ══ */
+        #div_manage {
+            background: rgba(255, 248, 238, 0.58);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.72);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 32px rgba(140,100,60,0.1), inset 0 1px 0 rgba(255,255,255,0.9);
+            margin-bottom: 24px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .manage-header {
+            background: rgba(122,92,58,0.07);
+            border-bottom: 1px solid rgba(122,92,58,0.1);
+            padding: 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .manage-header-icon {
+            width: 28px; height: 28px;
+            background: rgba(122,92,58,0.12);
+            border: 1px solid rgba(122,92,58,0.2);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary);
+            font-size: 13px;
+        }
+
+        .manage-header h2 {
+            color: var(--primary);
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .manage-body { padding: 22px; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+        .form-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            letter-spacing: 0.03em;
+        }
+
+        .form-control {
+            padding: 9px 12px;
+            border: 1.5px solid rgba(122,92,58,0.18);
+            border-radius: 7px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: var(--gray-800);
+            background: rgba(255,248,238,0.65);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        .form-control::placeholder { color: var(--gray-400); }
+
+        .form-control:focus {
+            outline: none;
+            border-color: rgba(122,92,58,0.4);
+            background: rgba(255,252,245,0.9);
+            box-shadow: 0 0 0 3px rgba(122,92,58,0.1);
+        }
+
+        select.form-control { cursor: pointer; }
+        select.form-control option { background: #faf5ed; color: var(--gray-800); }
+
+        .file-upload-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .file-upload-box {
+            border: 1.5px dashed rgba(122,92,58,0.22);
+            border-radius: 8px;
+            padding: 12px;
+            background: rgba(255,248,238,0.4);
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .file-upload-box:hover {
+            border-color: rgba(122,92,58,0.42);
+            background: rgba(255,248,238,0.65);
+        }
+
+        .file-type-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .file-type-label.img { color: var(--teal); }
+        .file-type-label.pdf { color: var(--red); }
+
+        input[type="file"].form-control {
+            padding: 6px 10px;
+            font-size: 0.82rem;
+        }
+
+        .manage-actions { display: flex; justify-content: flex-end; }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 22px; border: none; border-radius: 7px;
+            font-size: 0.9rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; font-family: inherit; text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff8ee;
+        }
+        .btn-primary:hover {
+            background: var(--primary-mid);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(122,92,58,0.28);
+        }
+
+        .btn-success {
+            background: #7a5c3a;
+            color: #fff8ee;
+        }
+        .btn-success:hover {
+            background: #6b4e2e;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(100,70,35,0.28);
+        }
+
+        .btn-secondary {
+            background: rgba(122,92,58,0.08);
+            color: var(--gray-600);
+            border: 1px solid rgba(122,92,58,0.18);
+        }
+        .btn-secondary:hover {
+            background: rgba(122,92,58,0.14);
+            color: var(--gray-800);
+        }
+
+        /* ══ CAROUSEL SECTION ══ */
+        .section-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px) saturate(120%);
+            -webkit-backdrop-filter: blur(15px) saturate(120%);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04), 
+        inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .section-card-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid rgba(122,92,58,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,248,238,0.35);
+        }
+
+        .section-card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .section-card-title-icon {
+            width: 30px; height: 30px;
+            background: rgba(122,92,58,0.1);
+            border: 1px solid rgba(122,92,58,0.18);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary-mid);
+            font-size: 13px;
+        }
+
+        .section-card-body { padding: 20px; }
+
+        /* Carousel dots override */
+        .owl-theme .owl-dots .owl-dot.active span,
+        .owl-theme .owl-dots .owl-dot:hover span {
+            background: var(--primary);
+        }
+
+        .owl-theme .owl-dots .owl-dot span {
+            width: 8px; height: 8px;
+            background: rgba(122,92,58,0.2);
+        }
+
+        .carousel-item-box {
+            aspect-ratio: 4 / 3;
+            background: var(--gray-100);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .carousel-item-box img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        .carousel-item-box:hover img { transform: scale(1.03); }
+
+        .carousel-caption {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            padding: 20px 12px 10px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 格數切換按鈕：僅管理員模式顯示 */
+        #layout_btns { display: none; }
+        body.admin-mode #layout_btns { display: flex; }
+
+        /* ══ 輪播格數切換 ══ */
+        .carousel-layout-btns {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .layout-btn {
+            width: 32px; height: 32px;
+            border: 1px solid rgba(122,92,58,0.2);
+            border-radius: 7px;
+            background: rgba(255,248,238,0.5);
+            color: var(--gray-400);
+            font-size: 12px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .layout-btn:hover {
+            background: rgba(122,92,58,0.1);
+            color: var(--primary);
+            border-color: rgba(122,92,58,0.35);
+        }
+
+        .layout-btn.active {
+            background: var(--primary);
+            color: #fff8ee;
+            border-color: var(--primary);
+        }
+
+        /* 格數圖示：用 grid 小方塊模擬 */
+        .layout-icon {
+            display: grid;
+            gap: 2px;
+        }
+        .layout-icon.cols-1 { grid-template-columns: 1fr; width: 10px; }
+        .layout-icon.cols-2 { grid-template-columns: 1fr 1fr; width: 12px; }
+        .layout-icon.cols-3 { grid-template-columns: 1fr 1fr 1fr; width: 14px; }
+        .layout-icon.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; width: 16px; }
+
+        .layout-icon span {
+            display: block;
+            height: 8px;
+            border-radius: 1px;
+            background: currentColor;
+            opacity: 0.85;
+        }
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .filter-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            white-space: nowrap;
+        }
+
+        input[type="month"].form-control {
+            width: auto;
+            padding: 7px 10px;
+            font-size: 0.85rem;
+        }
+
+        /* TABLE */
+        .announcement-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .announcement-table thead th {
+            padding: 11px 14px;
+            background: rgba(122,92,58,0.05);
+            color: var(--gray-600);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(122,92,58,0.1);
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .announcement-table tbody tr {
+            border-bottom: 1px solid rgba(122,92,58,0.07);
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+
+        .announcement-table tbody tr:hover {
+            background: rgba(255,248,238,0.6);
+        }
+
+        .announcement-table tbody tr:last-child { border-bottom: none; }
+
+        .announcement-table td {
+            padding: 13px 14px;
+            font-size: 0.88rem;
+            vertical-align: middle;
+        }
+
+/* 預設隱藏管理欄位與標題 */
+.col-manage, 
+th.col-manage {
+    display: none !important;
+}
+
+/* 當處於管理模式時，強制以 table-cell 顯示以維持對齊 */
+body.admin-mode .col-manage,
+body.admin-mode th.col-manage {
+    display: table-cell !important;
+    width: 150px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* 確保按鈕在 cell 內水平置中 */
+.col-manage .button-container {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+        /* BADGE */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        .badge-全院宣導 { background: rgba(184,92,74,0.1);  color: #9a3a28; border: 1px solid rgba(184,92,74,0.2); }
+        .badge-人資公告 { background: rgba(106,143,122,0.12); color: #3d6e58; border: 1px solid rgba(106,143,122,0.22); }
+        .badge-一般公告 { background: rgba(108, 117, 125, 0.1);  color: #495057; border: 1px solid rgba(108, 117, 125, 0.2); }
+        .badge-JIT     { background: rgba(196,120,64,0.1);  color: #8a4c18; border: 1px solid rgba(196,120,64,0.2); }
+
+        .title-text {
+            font-weight: 500;
+            color: var(--gray-800);
+            font-size: 0.9rem;
+        }
+
+        .date-text {
+            color: var(--gray-400);
+            font-size: 0.8rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── 分組標題列 ── */
+        .group-header { pointer-events: none; }
+        .group-header td {
+            padding: 7px 14px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            border-bottom: none !important;
+        }
+        .group-header.g-starred td {
+            background: rgba(196,154,60,0.09);
+            color: #7a5800;
+            border-top: 2px solid rgba(196,154,60,0.25) !important;
+            border-bottom: 1px solid rgba(196,154,60,0.18) !important;
+        }
+        .group-header.g-monthly td {
+            background: rgba(100,90,80,0.05);
+            color: var(--gray-400);
+            border-top: 2px solid rgba(122,92,58,0.12) !important;
+            border-bottom: 1px solid rgba(122,92,58,0.1) !important;
+        }
+        /* 星號列加淡黃底 */
+        tr.row-pinned td { background: rgba(255,250,235,0.7); }
+        tr.row-pinned:hover td { background: rgba(255,248,220,0.95) !important; }
+
+        /* ACTION BTNS in table */
+        .action-btn {
+            width: 30px; height: 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 13px;
+            transition: all 0.15s;
+            margin: 0 2px;
+        }
+
+        .btn-star {
+            background: rgba(122,92,58,0.07);
+            color: var(--gray-400);
+            border: 1px solid rgba(122,92,58,0.14);
+        }
+
+        .btn-star.active {
+            background: rgba(196,154,60,0.15);
+            color: #a07820;
+            border: 1px solid rgba(196,154,60,0.28);
+        }
+
+        .btn-star:hover { background: rgba(196,154,60,0.12); color: #a07820; }
+
+        .btn-del {
+            background: rgba(184,92,74,0.09);
+            color: var(--red);
+            border: 1px solid rgba(184,92,74,0.18);
+        }
+        .btn-del:hover { background: var(--red); color: white; }
+
+        .btn-edit {
+            background: rgba(122,92,58,0.09);
+            color: var(--primary-mid);
+            border: 1px solid rgba(122,92,58,0.18);
+        }
+        .btn-edit:hover { background: var(--primary); color: #fff8ee; }
+
+        /* VIEW ICONS */
+        .view-icons { display: flex; gap: 6px; align-items: center; }
+
+        .view-icon-btn {
+            width: 32px; height: 32px;
+            border-radius: 7px;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .view-icon-btn.img {
+            background: rgba(106,143,122,0.1);
+            color: var(--teal);
+            border: 1px solid rgba(106,143,122,0.2);
+        }
+        .view-icon-btn.img:hover { background: var(--teal); color: white; }
+
+        .view-icon-btn.pdf {
+            background: rgba(184,92,74,0.1);
+            color: var(--red);
+            border: 1px solid rgba(184,92,74,0.2);
+        }
+        .view-icon-btn.pdf:hover { background: var(--red); color: white; }
+
+        .view-icon-btn.link {
+            background: rgba(100,110,200,0.1);
+            color: #5560c8;
+            border: 1px solid rgba(100,110,200,0.22);
+        }
+        .view-icon-btn.link:hover { background: #5560c8; color: white; }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--gray-400);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+            color: var(--gray-200);
+        }
+
+        .empty-state p { font-size: 0.9rem; }
+
+        /* ══ MODAL ══ */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(100,70,40,0.2);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-box {
+            background: rgba(255, 248, 238, 0.78);
+            backdrop-filter: blur(28px) saturate(200%);
+            -webkit-backdrop-filter: blur(28px) saturate(200%);
+            border: 1px solid rgba(255,255,255,0.88);
+            border-radius: 14px;
+            width: 92%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(140,100,60,0.18), inset 0 1px 0 rgba(255,255,255,1);
+            animation: modalIn 0.25s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .modal-header {
+            background: rgba(122,92,58,0.07);
+            border-bottom: 1px solid rgba(122,92,58,0.1);
+            padding: 16px 22px;
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .modal-body { padding: 22px; }
+
+        .modal-footer {
+            padding: 16px 22px;
+            border-top: 1px solid rgba(122,92,58,0.09);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: rgba(255,248,238,0.35);
+        }
+
+        /* ══ TOAST ══ */
+        .toast-container {
+            position: fixed;
+            top: 76px; right: 20px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background: rgba(255, 248, 238, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.88);
+            border-radius: 8px;
+            padding: 12px 18px;
+            box-shadow: 0 8px 28px rgba(140,100,60,0.14);
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--gray-800);
+            min-width: 240px;
+            animation: toastIn 0.3s ease;
+            border-left: 3px solid var(--teal);
+        }
+
+        .toast.error { border-left-color: var(--red); }
+        .toast i { font-size: 1rem; }
+        .toast.success i { color: var(--teal); }
+        .toast.error i { color: var(--red); }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--gray-400);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+            color: rgba(0,80,180,0.12);
+        }
+
+        .empty-state p { font-size: 0.9rem; }
+
+        /* ══ STATS ROW ══ */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255, 248, 238, 0.6);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.75);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: 0 4px 20px rgba(140,100,60,0.1), inset 0 1px 0 rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(140,100,60,0.15), inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+
+        .stat-icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue   { background: rgba(74, 78, 82, 0.1);  color: #4a4e52; }
+        .stat-icon.red    { background: rgba(184,92,74,0.12);  color: #a0422e; }
+        .stat-icon.teal   { background: rgba(106,143,122,0.15); color: #4a7260; }
+        .stat-icon.orange { background: rgba(196,120,64,0.12); color: #9a5c25; }
+
+        .stat-num {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.74rem;
+            color: var(--gray-400);
+            margin-top: 3px;
+            font-weight: 500;
+        }
+
+        /* ── 操作紀錄面板 ── */
+        .audit-panel { display: none; margin-top: 20px; }
+        body.admin-mode .audit-panel { display: block; }
+        .audit-toolbar {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 12px; flex-wrap: wrap;
+        }
+        .audit-toolbar h3 {
+            font-size: 1rem; font-weight: 600;
+            color: var(--gray-700); margin: 0; flex: 1;
+        }
+        .audit-filter { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .audit-filter select, .audit-filter input {
+            font-size: 0.82rem; padding: 4px 10px;
+            border: 1px solid rgba(122,92,58,0.2);
+            border-radius: 7px; background: rgba(255,248,238,0.7);
+            color: var(--gray-700); height: 32px;
+        }
+        .audit-table-wrap {
+            overflow-x: auto; border-radius: 10px;
+            border: 1px solid rgba(122,92,58,0.13);
+        }
+        .audit-table {
+            width: 100%; border-collapse: collapse;
+            font-size: 0.83rem; background: rgba(255,255,255,0.5);
+        }
+        .audit-table th {
+            background: rgba(122,92,58,0.08); color: var(--gray-600);
+            font-weight: 600; padding: 9px 12px; text-align: left;
+            border-bottom: 1px solid rgba(122,92,58,0.12); white-space: nowrap;
+        }
+        .audit-table td {
+            padding: 8px 12px; border-bottom: 1px solid rgba(122,92,58,0.07);
+            color: var(--gray-700); vertical-align: middle;
+        }
+        .audit-table tr:last-child td { border-bottom: none; }
+        .audit-table tr:hover td { background: rgba(122,92,58,0.04); }
+        .audit-badge {
+            display: inline-block; font-size: 0.75rem;
+            padding: 2px 9px; border-radius: 20px; font-weight: 500;
+        }
+        .audit-badge.login  { background: rgba(60,160,80,0.12);  color: #2a7a40; }
+        .audit-badge.logout { background: rgba(120,120,120,0.12); color: #555; }
+        .audit-badge.add    { background: rgba(70,120,200,0.12);  color: #2a5ba0; }
+        .audit-badge.edit   { background: rgba(200,140,30,0.13);  color: #7a5000; }
+        .audit-badge.delete { background: rgba(200,60,60,0.12);   color: #a02020; }
+        .audit-badge.star   { background: rgba(200,160,0,0.13);   color: #806000; }
+        .audit-empty { text-align: center; padding: 32px; color: var(--gray-400); font-size: 0.88rem; }
+
+        /* ══ RESPONSIVE ══ */
+        @media (max-width: 768px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .file-upload-row { grid-template-columns: 1fr; }
+            .announcement-table thead { display: none; }
+            .announcement-table td { display: block; padding: 6px 12px; border: none; }
+            .announcement-table tr { border-bottom: 1px solid var(--gray-200); display: block; padding: 8px 0; }
+            .col-manage { text-align: left !important; width: 100%; }
+            .filter-bar { flex-wrap: wrap; }
+            .header-date { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .top-bar-inner { padding: 0 12px; }
+            .main-container { padding: 16px 12px; }
+        }
+
+        /* ══ LOGIN MODAL ══ */
+        /* 編輯 modal 內的上傳區改為單欄，避免橫向溢出 */
+        #modal_edit .file-upload-row {
+            grid-template-columns: 1fr;
+        }
+
+        #modal_login .modal-box {
+            max-width: 380px;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%       { transform: translateX(-8px); }
+            40%       { transform: translateX(8px); }
+            60%       { transform: translateX(-5px); }
+            80%       { transform: translateX(5px); }
+        }
+
+        .login-icon-wrap {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-icon-wrap .login-avatar {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: rgba(122,92,58,0.1);
+            border: 2px solid rgba(122,92,58,0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .login-icon-wrap p {
+            font-size: 0.82rem;
+            color: var(--gray-400);
+        }
+
+        .login-error {
+            display: none;
+            background: rgba(184,92,74,0.1);
+            border: 1px solid rgba(184,92,74,0.25);
+            color: #8a3a28;
+            border-radius: 7px;
+            padding: 9px 13px;
+            font-size: 0.83rem;
+            margin-top: 12px;
+            display: none;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .login-error.show { display: flex; }
+
+        .pw-input-wrap {
+            position: relative;
+        }
+
+        .pw-input-wrap .form-control {
+            padding-right: 42px;
+        }
+
+        .pw-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray-400);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .pw-toggle:hover { color: var(--primary); }
+
+        /* Carousel nav arrows */
+        .owl-carousel .owl-nav button.owl-prev,
+        .owl-carousel .owl-nav button.owl-next {
+            width: 32px; height: 32px;
+            border-radius: 50% !important;
+            background: rgba(122,92,58,0.12) !important;
+            border: 1px solid rgba(122,92,58,0.2) !important;
+            color: var(--primary) !important;
+            font-size: 13px !important;
+            transition: all 0.15s;
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+        }
+        .owl-carousel .owl-nav button.owl-prev { left: -14px; }
+        .owl-carousel .owl-nav button.owl-next { right: -14px; }
+        .owl-carousel .owl-nav button:hover {
+            background: var(--primary) !important;
+            color: #fff8ee !important;
+        }
+        .owl-stage-outer { padding: 4px 2px; }
+
+        /* Spinner */
+        .spinner { animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Owl nav override */
+        .owl-carousel .owl-nav.disabled { display: none; }
+
+        /* ══ LIGHTBOX ══ */
+        #lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9000;
+            background: rgba(30, 20, 10, 0.82);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            animation: lbFadeIn 0.25s ease;
+            cursor: zoom-out;
+        }
+
+        #lightbox.active { display: flex; }
+
+        @keyframes lbFadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .lb-inner {
+            position: relative;
+            max-width: 92vw;
+            max-height: 90vh;
+            cursor: default;
+            animation: lbZoomIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes lbZoomIn {
+            from { opacity: 0; transform: scale(0.88); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        #lb_img {
+            display: block;
+            max-width: 92vw;
+            max-height: 85vh;
+            border-radius: 10px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+            object-fit: contain;
+            user-select: none;
+        }
+
+        .lb-caption {
+            margin-top: 12px;
+            text-align: center;
+            color: rgba(255,255,255,0.75);
+            font-size: 0.88rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+        }
+
+        .lb-close {
+            position: fixed;
+            top: 18px;
+            right: 22px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            z-index: 9001;
+        }
+
+        .lb-close:hover {
+            background: rgba(255,255,255,0.22);
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .lb-open-btn {
+            position: absolute;
+            bottom: 46px;
+            right: 10px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            font-size: 0.78rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+
+        .lb-open-btn:hover { background: rgba(255,255,255,0.25); }
+    </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+    <div class="top-bar-inner">
+        <div class="brand">
+            <div class="brand-icon"><img src="img/favicon.png"></div>
+            <div>
+                <div class="brand-name">院內輪播公告系統</div>
+                <div class="brand-sub">ANNOUNCEMENT BOARD</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="header-date" id="header_date"></span>
+            <button class="btn-admin-toggle" onclick="toggleManage()">
+                <i class="fas fa-user-cog" id="admin_icon"></i>
+                <span id="admin_text">管理員</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<div class="main-container">
+
+    <!-- STATS ROW -->
+    <div class="stats-row" id="stats_row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-bullhorn"></i></div>
+            <div>
+                <div class="stat-num" id="stat_general">—</div>
+                <div class="stat-label">一般公告</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-broadcast-tower"></i></div>
+            <div>
+                <div class="stat-num" id="stat_all">—</div>
+                <div class="stat-label">全院宣導</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon teal"><i class="fas fa-users"></i></div>
+            <div>
+                <div class="stat-num" id="stat_hr">—</div>
+                <div class="stat-label">人資公告</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-smile"></i></div>
+            <div>
+                <div class="stat-num" id="stat_jit">—</div>
+                <div class="stat-label">JIT</div>
+            </div>
+        </div>
+    </div>
+    <!-- 年份統計說明列 -->
+    <div id="stats_year_bar" style="text-align:right; margin:-16px 0 16px; font-size:0.78rem; color:var(--gray-400);">
+        統計年度：<select id="stats_year_picker" style="
+            border:1px solid rgba(122,92,58,0.18); border-radius:5px;
+            background:rgba(255,248,238,0.7); color:var(--gray-600);
+            font-size:0.78rem; padding:2px 8px; cursor:pointer; font-family:inherit;
+        "></select> 年（各類別全年發佈總數）
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="div_manage">
+        <div class="manage-header">
+            <div class="manage-header-icon"><i class="fas fa-plus"></i></div>
+            <h2>新增公告內容</h2>
+        </div>
+        <div class="manage-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">公告類別</label>
+                    <select id="select_status" class="form-control">
+                        <option value="一般公告">一般公告</option>
+                        <option value="全院宣導">全院宣導</option>
+                        <option value="人資公告">人資公告</option>
+                        <option value="JIT">JIT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">公告標題</label>
+                    <input type="text" id="input_title" class="form-control" placeholder="請輸入公告標題">
+                </div>
+            </div>
+            <div class="file-upload-row">
+                <div class="file-upload-box">
+                    <div class="file-type-label img"><i class="fas fa-image"></i> 圖片檔（JPG / PNG）</div>
+                    <input type="file" id="Input_IMG" class="form-control" accept="image/jpeg, image/png">
+                </div>
+                <div class="file-upload-box">
+                    <div class="file-type-label pdf"><i class="fas fa-file-pdf"></i> 公告文件（PDF）</div>
+                    <input type="file" id="Input_PDF" class="form-control" accept="application/pdf">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:14px;">
+                <label class="form-label"><i class="fas fa-link" style="margin-right:5px;color:#5560c8;"></i>相關連結（選填）</label>
+                <input type="url" id="input_link" class="form-control" placeholder="https://...（可選填，讓閱覽者直接前往相關頁面）">
+            </div>
+            <div class="manage-actions">
+                <button id="btn_上傳檔案" class="btn btn-success">
+                    <i class="fas fa-check-circle"></i> 發佈公告
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CAROUSEL SECTION -->
+    <div class="section-card">
+        <div class="section-card-header">
+            <div class="section-card-title">
+                <div class="section-card-title-icon"><i class="fas fa-star"></i></div>
+                重要焦點公告
+            </div>
+            <div style="display:flex; align-items:center; gap:16px;">
+                <!-- 格數切換 -->
+                <div class="carousel-layout-btns" id="layout_btns">
+                    <button class="layout-btn" data-cols="1" title="單欄顯示">
+                        <div class="layout-icon cols-1"><span></span></div>
+                    </button>
+                    <button class="layout-btn" data-cols="2" title="2欄顯示">
+                        <div class="layout-icon cols-2"><span></span><span></span></div>
+                    </button>
+                    <button class="layout-btn active" data-cols="3" title="3欄顯示（預設）">
+                        <div class="layout-icon cols-3"><span></span><span></span><span></span></div>
+                    </button>
+                    <button class="layout-btn" data-cols="4" title="4欄顯示">
+                        <div class="layout-icon cols-4"><span></span><span></span><span></span><span></span></div>
+                    </button>
+                </div>
+                <span style="font-size:0.78rem; color:rgba(90,60,30,0.42);">★ 標記的公告將自動加入輪播</span>
+            </div>
+        </div>
+        <div class="section-card-body">
+            <div id="div_owl" class="owl-carousel owl-theme"></div>
+            <div id="carousel_empty" style="display:none; text-align:center; padding:32px; color:var(--gray-400); font-size:0.88rem;">
+                <i class="fas fa-images" style="font-size:2rem; display:block; margin-bottom:8px; color:rgba(122,92,58,0.18);"></i>
+                目前無焦點公告，請在列表中點選 ★ 加入輪播
+            </div>
+        </div>
+    </div>
+
+    <!-- LIST SECTION -->
+    <div class="section-card">
+        <div class="section-card-header">
+            <div class="section-card-title">
+                <div class="section-card-title-icon"><i class="fas fa-list-ul"></i></div>
+                公告列表
+            </div>
+            <div class="filter-bar">
+                <span class="filter-label">月份篩選</span>
+                <input type="month" id="month_picker" class="form-control">
+            </div>
+        </div>
+        <div class="section-card-body" style="padding:0;">
+            <table class="announcement-table" id="announcement_list">
+                <thead>
+                    <tr>
+                        <th width="110">日期</th>
+                        <th width="95">類別</th>
+                        <th>標題內容</th>
+                        <th width="90">查看</th>
+                        <th class="col-manage" style="text-align:center;">管理</th>
+                    </tr>
+                </thead>
+                <tbody id="starred_tbody"></tbody>
+                <tbody id="monthly_tbody">
+                    <tr><td colspan="5">
+                        <div class="empty-state">
+                            <i class="fas fa-spinner spinner"></i>
+                            <p>載入中...</p>
+                        </div>
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div><!-- end .main-container -->
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast_container"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+    <button class="lb-close" onclick="closeLightbox()" title="關閉"><i class="fas fa-times"></i></button>
+    <div class="lb-inner" onclick="event.stopPropagation()">
+        <img id="lb_img" src="" alt="">
+        <a id="lb_open_btn" class="lb-open-btn" href="#" target="_blank">
+            <i class="fas fa-external-link-alt"></i> 在新分頁開啟
+        </a>
+        <div class="lb-caption" id="lb_caption"></div>
+    </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="modal_login">
+    <div class="modal-box">
+        <div class="modal-header">
+            <i class="fas fa-lock"></i> 管理員登入
+        </div>
+        <div class="modal-body">
+            <div class="login-icon-wrap">
+                <div class="login-avatar"><i class="fas fa-user-shield"></i></div>
+                <p>請輸入管理員密碼以進入管理模式</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">管理員密碼</label>
+                <div class="pw-input-wrap">
+                    <input type="password" id="login_pw" class="form-control" placeholder="請輸入密碼"
+                        onkeydown="if(event.key==='Enter') submitLogin()">
+                    <button class="pw-toggle" type="button" onclick="togglePwVisibility()" title="顯示/隱藏密碼">
+                        <i class="fas fa-eye" id="pw_eye_icon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="login-error" id="login_error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>密碼錯誤，請重新輸入</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeLoginModal()">取消</button>
+            <button class="btn btn-primary" onclick="submitLogin()">
+                <i class="fas fa-sign-in-alt"></i> 登入
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 操作紀錄面板（管理模式才顯示） -->
+<div class="section-card audit-panel" id="audit_panel">
+    <div class="section-card-header">
+        <div class="section-card-title">
+            <div class="section-card-title-icon"><i class="fas fa-history"></i></div>
+            操作紀錄
+        </div>
+        <button class="btn btn-secondary" style="font-size:0.82rem;padding:5px 14px;" onclick="loadAuditLog()">
+            <i class="fas fa-sync-alt"></i> 重新整理
+        </button>
+    </div>
+    <div style="padding:16px;">
+        <div class="audit-toolbar">
+            <h3 id="audit_count">載入中...</h3>
+            <div class="audit-filter">
+                <select id="audit_operator_filter" onchange="renderAuditTable()">
+                    <option value="">全部人員</option>
+                </select>
+                <select id="audit_action_filter" onchange="renderAuditTable()">
+                    <option value="">全部動作</option>
+                    <option value="登入">登入</option>
+                    <option value="登出">登出</option>
+                    <option value="新增公告">新增公告</option>
+                    <option value="編輯公告">編輯公告</option>
+                    <option value="刪除公告">刪除公告</option>
+                    <option value="加入焦點輪播">加入焦點輪播</option>
+                    <option value="移除焦點輪播">移除焦點輪播</option>
+                </select>
+                <input type="date" id="audit_date_filter" onchange="renderAuditTable()" title="篩選日期">
+            </div>
+        </div>
+        <div class="audit-table-wrap">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>時間</th>
+                        <th>操作人員</th>
+                        <th>動作</th>
+                        <th>說明</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody id="audit_tbody">
+                    <tr><td colspan="5" class="audit-empty"><i class="fas fa-spinner fa-spin"></i> 載入中...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modal_edit">
+    <div class="modal-box">
+        <div class="modal-header">
+            <i class="fas fa-edit"></i> 編輯公告
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="edit_id">
+            <div class="form-group" style="margin-bottom:14px;">
+                <label class="form-label">公告標題</label>
+                <input type="text" id="edit_title" class="form-control">
+            </div>
+            <div class="file-upload-row">
+                <div class="file-upload-box">
+                    <div class="file-type-label img"><i class="fas fa-image"></i> 更換圖片</div>
+                    <input type="file" id="Edit_IMG" class="form-control" accept="image/jpeg, image/png">
+                </div>
+                <div class="file-upload-box">
+                    <div class="file-type-label pdf"><i class="fas fa-file-pdf"></i> 更換 PDF</div>
+                    <input type="file" id="Edit_PDF" class="form-control" accept="application/pdf">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:14px;">
+                <label class="form-label"><i class="fas fa-link" style="margin-right:5px;color:#5560c8;"></i>相關連結（選填）</label>
+                <input type="url" id="edit_link" class="form-control" placeholder="https://...">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="document.getElementById('modal_edit').style.display='none'">取消</button>
+            <button class="btn btn-primary" onclick="submitEdit()"><i class="fas fa-save"></i> 儲存修改</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+
+<script>
+let owl;
+let isAdminMode = false;
+let allData = [];
+
+// ── UTILS ──
+function showToast(msg, type = 'success') {
+    const id = 'toast_' + Date.now();
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-times-circle';
+    const html = `<div class="toast ${type}" id="${id}">
+        <i class="fas ${icon}"></i><span>${msg}</span>
+    </div>`;
+    $('#toast_container').append(html);
+    setTimeout(() => { $(`#${id}`).fadeOut(300, function(){ $(this).remove(); }); }, 3000);
+}
+
+function updateStats(data) {
+    const year = parseInt($('#stats_year_picker').val()) || new Date().getFullYear();
+    const yearData = data.filter(d => d.date && d.date.startsWith(String(year)));
+    $('#stat_general').text(yearData.filter(d => d.status === '一般公告').length);
+    $('#stat_all').text(yearData.filter(d => d.status === '全院宣導').length);
+    $('#stat_hr').text(yearData.filter(d => d.status === '人資公告').length);
+    $('#stat_jit').text(yearData.filter(d => d.status === 'JIT').length);
+}
+
+function initStatsYearPicker(data) {
+    const currentYear = new Date().getFullYear();
+    // 從資料中取得所有年份，至少包含今年
+    const years = [...new Set(data.map(d => d.date ? d.date.substring(0, 4) : null).filter(Boolean))]
+        .map(Number).sort((a, b) => b - a);
+    if (!years.includes(currentYear)) years.unshift(currentYear);
+
+    const $sel = $('#stats_year_picker').empty();
+    years.forEach(y => {
+        $sel.append(`<option value="${y}"${y === currentYear ? ' selected' : ''}>${y}</option>`);
+    });
+
+    $sel.on('change', () => updateStats(allData));
+}
+
+// ── INIT ──
+$(document).ready(function(){
+    // Header date
+    const now = new Date();
+    $('#header_date').text(now.toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric', weekday:'short' }));
+
+    // Month picker
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    $("#month_picker").val(currentMonth);
+
+    // 輪播格數切換
+    $('#layout_btns').on('click', '.layout-btn', function() {
+        const cols = parseInt($(this).data('cols'));
+        if (cols !== carouselCols) setCarouselCols(cols);
+    });
+
+    initOwl();
+    loadExistingFiles(currentMonth);
+    checkAuthOnLoad();
+
+    $("#month_picker").on("change", function(){
+        const sel = $(this).val();
+        if (sel) renderTable(allData, sel);
+    });
+
+    $("#btn_上傳檔案").on("click", uploadFile);
+
+    // Close login modal on overlay click (編輯 modal 不允許點外部關閉，防止誤觸)
+    $('#modal_login').on('click', function(e){ if ($(e.target).is('#modal_login')) closeLoginModal(); });
+
+    // ESC 只關閉燈箱與登入 modal（編輯 modal 需明確按取消）
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (document.getElementById('lightbox').classList.contains('active')) {
+                closeLightbox();
+            } else if ($('#modal_login').is(':visible')) {
+                closeLoginModal();
+            }
+        }
+    });
+});
+
+// ── OWL CAROUSEL ──
+// 目前每頁顯示格數（預設 3）
+let carouselCols = parseInt(localStorage.getItem('carouselCols')) || 3;
+
+function initOwl() {
+    owl = $("#div_owl").owlCarousel(buildOwlOptions(carouselCols));
+    // 標記對應按鈕為 active
+    $('#layout_btns .layout-btn').removeClass('active')
+        .filter(`[data-cols="${carouselCols}"]`).addClass('active');
+}
+
+function buildOwlOptions(cols) {
+    // 小螢幕固定 1 欄，中螢幕最多 2 欄，大螢幕用選擇的格數
+    const mid = Math.min(cols, 2);
+    return {
+        margin: 12,
+        autoplay: true,
+        autoplayTimeout: 3500,
+        smartSpeed: 700,
+        autoplayHoverPause: true,
+        dots: true,
+        nav: cols > 2,          // 格數多時顯示左右箭頭
+        navText: [
+            '<i class="fas fa-chevron-left"></i>',
+            '<i class="fas fa-chevron-right"></i>'
+        ],
+        responsive: {
+            0:    { items: 1,    loop: false },
+            600:  { items: mid,  loop: false },
+            1000: { items: cols, loop: false }
+        }
+    };
+}
+
+function setCarouselCols(cols) {
+    carouselCols = cols;
+    localStorage.setItem('carouselCols', cols);
+
+    // 重建 carousel（destroy → re-init 最穩定）
+    owl.trigger('destroy.owl.carousel');
+    owl = $("#div_owl").owlCarousel(buildOwlOptions(cols));
+
+    // 更新按鈕 active 狀態
+    $('#layout_btns .layout-btn').removeClass('active')
+        .filter(`[data-cols="${cols}"]`).addClass('active');
+}
+
+function refreshCarouselEmpty() {
+    const count = $("#div_owl .item").length;
+    if (count === 0) {
+        $('#carousel_empty').show();
+    } else {
+        $('#carousel_empty').hide();
+    }
+}
+
+// ── LOAD DATA ──
+function loadExistingFiles(filterMonth = "") {
+    fetch('data.json?t=' + Date.now())
+    .then(r => r.json())
+    .then(data => {
+        allData = data;
+
+        // Carousel: load only once
+        const currentInOwl = owl.find('.owl-item').length;
+        if (currentInOwl === 0) {
+            data.forEach(item => {
+                if (item.isStarred) addToCarousel(item);
+            });
+            owl.trigger('refresh.owl.carousel');
+        }
+
+        refreshCarouselEmpty();
+        initStatsYearPicker(data);
+        updateStats(data);
+        renderTable(data, filterMonth);
+    })
+    .catch(err => {
+        console.error(err);
+        showToast('無法讀取公告資料', 'error');
+    });
+}
+
+function renderTable(data, filterMonth) {
+    const $sTbody = $('#starred_tbody').empty();
+    const $mTbody = $('#monthly_tbody').empty();
+
+    // ── 上半：全部星號公告（不限月份）──
+    const starredItems = data.filter(d => d.isStarred);
+    if (starredItems.length > 0) {
+        $sTbody.append(`<tr class="group-header g-starred">
+            <td colspan="5"><i class="fas fa-star" style="margin-right:6px;color:#c49a3c;"></i>焦點公告（共 ${starredItems.length} 則，跨月固定顯示）</td>
+        </tr>`);
+        starredItems.forEach(item =>
+            renderRow(item.id, item.title, item.imgPath, item.pdfPath, item.date, item.status, true, false, '#starred_tbody', item.linkUrl)
+        );
+    }
+
+    // ── 下半：當月非星號公告 ──
+    const monthLabel = filterMonth
+        ? filterMonth.replace(/^(\d+)-(\d+)$/, '$1 年 $2 月')
+        : '全部';
+    const monthlyItems = filterMonth
+        ? data.filter(d => d.date.startsWith(filterMonth) && !d.isStarred)
+        : data.filter(d => !d.isStarred);
+
+    $mTbody.append(`<tr class="group-header g-monthly">
+        <td colspan="5"><i class="fas fa-calendar-alt" style="margin-right:6px;"></i>${monthLabel}公告（共 ${monthlyItems.length} 則）</td>
+    </tr>`);
+
+    if (monthlyItems.length === 0) {
+        $mTbody.append(`<tr><td colspan="5">
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>本月份尚無其他公告</p>
+            </div>
+        </td></tr>`);
+    } else {
+        monthlyItems.forEach(item =>
+            renderRow(item.id, item.title, item.imgPath, item.pdfPath, item.date, item.status, false, false, '#monthly_tbody', item.linkUrl)
+        );
+    }
+}
+
+function addToCarousel(item) {
+    const titleEsc = item.title.replace(/'/g, "\\'");
+    const src = item.imgPath || item.pdfPath || '';
+    const html = `<div class="item" data-id="${item.id}">
+        <div class="carousel-item-box" onclick="viewFile('${src}','${titleEsc}')">
+            <img src="${item.imgPath || 'https://placehold.co/800x600/e8d8c0/7a5c3a?text=PDF+公告'}" alt="${item.title}">
+            <div class="carousel-caption">${item.title}</div>
+        </div>
+    </div>`;
+    owl.trigger('add.owl.carousel', [$(html)]);
+}
+
+// ── RENDER ROW ──
+function renderRow(id, title, imgPath, pdfPath, date, status, isStarred, isNew, targetTbody, linkUrl) {
+    const previewImg = imgPath || (pdfPath ? 'https://placehold.co/800x600/e8d8c0/7a5c3a?text=PDF' : '');
+    const titleEsc = title.replace(/'/g, "\\'");
+
+    let viewIcons = '<div class="view-icons">';
+    if (imgPath) viewIcons += `<button class="view-icon-btn img" onclick="viewFile('${imgPath}','${titleEsc}')" title="查看圖片"><i class="fas fa-image"></i></button>`;
+    if (pdfPath) viewIcons += `<button class="view-icon-btn pdf" onclick="viewFile('${pdfPath}','${titleEsc}')" title="查看PDF"><i class="fas fa-file-pdf"></i></button>`;
+    if (linkUrl) viewIcons += `<a class="view-icon-btn link" href="${linkUrl}" target="_blank" title="前往相關連結" onclick="event.stopPropagation()"><i class="fas fa-link"></i></a>`;
+    viewIcons += '</div>';
+
+    const starClass   = isStarred ? 'active' : '';
+    const pinnedClass = isStarred ? 'row-pinned' : '';
+
+    const rowClick = imgPath
+        ? `viewFile('${imgPath}','${titleEsc}')`
+        : (pdfPath ? `viewFile('${pdfPath}','${titleEsc}')` : (linkUrl ? `window.open('${linkUrl}','_blank')` : ''));
+
+    const row = `<tr class="${pinnedClass}" data-id="${id}" data-img="${previewImg}" data-link="${linkUrl || ''}" onclick="${rowClick}">
+        <td><span class="date-text">${date}</span></td>
+        <td><span class="badge badge-${status}">${status}</span></td>
+        <td><span class="title-text">${title}</span></td>
+        <td onclick="event.stopPropagation()">${viewIcons}</td>
+        <td class="col-manage" onclick="event.stopPropagation()">
+            <button class="action-btn btn-star ${starClass}" onclick="toggleCarousel(event, this)" title="${isStarred?'移除輪播':'設為輪播'}">
+                <i class="fas fa-star"></i>
+            </button>
+            <button class="action-btn btn-edit" onclick="openEditModal(event, this)" title="編輯">
+                <i class="fas fa-pen"></i>
+            </button>
+            <button class="action-btn btn-del" onclick="deleteAnnouncement(event, this)" title="刪除">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>`;
+
+    const $target = targetTbody
+        ? $(targetTbody)
+        : (isStarred ? $('#starred_tbody') : $('#monthly_tbody'));
+
+    if (isNew) {
+        $target.prepend(row);
+    } else {
+        $target.append(row);
+    }
+}
+
+// ── VIEW FILE (Lightbox for images, new tab for PDF) ──
+function viewFile(path, caption) {
+    if (!path) return;
+    const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(path);
+    if (isImage) {
+        openLightbox(path, caption || '');
+    } else {
+        window.open(path, '_blank');
+    }
+}
+
+function openLightbox(src, caption) {
+    const lb = document.getElementById('lightbox');
+    const img = document.getElementById('lb_img');
+    const cap = document.getElementById('lb_caption');
+    const btn = document.getElementById('lb_open_btn');
+    img.src = src;
+    cap.textContent = caption || '';
+    btn.href = src;
+    lb.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    const lb = document.getElementById('lightbox');
+    lb.classList.remove('active');
+    document.body.style.overflow = '';
+    // clear src after fade to avoid flicker
+    setTimeout(() => { document.getElementById('lb_img').src = ''; }, 250);
+}
+
+// ── ADMIN LOGIN (PHP session-based) ──
+
+function toggleManage() {
+    if (isAdminMode) {
+        logoutAdmin();
+    } else {
+        openLoginModal();
+    }
+}
+
+function openLoginModal() {
+    document.getElementById('login_pw').value = '';
+    document.getElementById('login_pw').type = 'password';
+    document.getElementById('pw_eye_icon').className = 'fas fa-eye';
+    document.getElementById('login_error').classList.remove('show');
+    document.getElementById('modal_login').style.display = 'flex';
+    setTimeout(() => document.getElementById('login_pw').focus(), 100);
+}
+
+function closeLoginModal() {
+    document.getElementById('modal_login').style.display = 'none';
+}
+
+function togglePwVisibility() {
+    const pw   = document.getElementById('login_pw');
+    const icon = document.getElementById('pw_eye_icon');
+    if (pw.type === 'password') {
+        pw.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        pw.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+
+function submitLogin() {
+    const password = document.getElementById('login_pw').value;
+    const errorEl  = document.getElementById('login_error');
+    const errorMsg = errorEl.querySelector('span');
+
+    if (!password) { return; }
+
+    // 送出前禁用按鈕，防止連點
+    const $btn = $('#modal_login .btn-primary');
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner spinner"></i> 驗證中...');
+
+    fetch('api/login.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ password })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeLoginModal();
+            enterAdminMode(data.adminName || '');
+        } else {
+            errorMsg.textContent = data.message || '密碼錯誤，請重新輸入';
+            errorEl.classList.add('show');
+            document.getElementById('login_pw').value = '';
+            document.getElementById('login_pw').focus();
+            // 抖動動畫
+            const box = document.querySelector('#modal_login .modal-box');
+            box.style.animation = 'none';
+            box.offsetHeight;
+            box.style.animation = 'shake 0.4s ease';
+        }
+    })
+    .catch(() => {
+        errorMsg.textContent = '伺服器連線失敗，請稍後再試';
+        errorEl.classList.add('show');
+    })
+    .finally(() => {
+        $btn.prop('disabled', false).html('<i class="fas fa-sign-in-alt"></i> 登入');
+    });
+}
+
+function enterAdminMode(name) {
+    isAdminMode = true;
+    $('body').addClass('admin-mode');
+    $('#div_manage').slideDown(250);
+    $('#admin_icon').attr('class', 'fas fa-eye-slash');
+    const label = name ? `${name}・離開管理` : '離開管理';
+    $('#admin_text').text(label);
+    showToast(`已進入管理員模式${name ? '（' + name + '）' : ''}`);
+    loadAuditLog();
+}
+
+function logoutAdmin() {
+    fetch('api/logout.php', { method: 'POST' })
+    .then(() => {
+        isAdminMode = false;
+        $('body').removeClass('admin-mode');
+        $('#div_manage').slideUp(250);
+        $('#admin_icon').attr('class', 'fas fa-user-cog');
+        $('#admin_text').text('管理員');
+        showToast('已退出管理員模式');
+    })
+    .catch(() => showToast('登出時發生錯誤', 'error'));
+}
+
+// 頁面載入時，確認 session 是否仍有效（例如重新整理後保持登入狀態）
+function checkAuthOnLoad() {
+    fetch('api/check_auth.php')
+    .then(r => r.json())
+    .then(data => {
+        if (data.loggedIn) {
+            enterAdminMode(data.adminName || '');
+        }
+    })
+    .catch(() => {}); // 靜默失敗
+}
+
+// ── TOGGLE STAR ──
+function toggleCarousel(event, btn) {
+    event.stopPropagation();
+    const $btn = $(btn);
+    const row = $btn.closest('tr');
+    const id = row.data('id');
+    const title = row.find('.title-text').text();
+    const imgUrl = row.data('img');
+    const willStar = !$btn.hasClass('active');
+
+    const fd = new FormData();
+    fd.append('id', id);
+    fd.append('isStarred', willStar);
+
+    fetch('api/toggle_star.php', { method:'POST', body:fd })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // 更新記憶體中的 allData
+            const item = allData.find(d => d.id == id);
+            if (item) item.isStarred = willStar;
+
+            if (willStar) {
+                const titleEsc = title.replace(/'/g, "\\'");
+                const html = `<div class="item" data-id="${id}">
+                    <div class="carousel-item-box" onclick="viewFile('${imgUrl}','${titleEsc}')">
+                        <img src="${imgUrl || 'https://placehold.co/800x600/e8d8c0/7a5c3a?text=PDF'}" alt="${title}">
+                        <div class="carousel-caption">${title}</div>
+                    </div>
+                </div>`;
+                owl.trigger('add.owl.carousel', [$(html)]);
+                showToast('已加入焦點輪播');
+            } else {
+                let targetIdx = -1;
+                $("#div_owl .item").each(function(i){ if ($(this).data('id') == id) targetIdx = i; });
+                if (targetIdx !== -1) owl.trigger('remove.owl.carousel', [targetIdx]);
+                showToast('已從輪播移除');
+            }
+            owl.trigger('refresh.owl.carousel');
+            refreshCarouselEmpty();
+
+            // 重新 render 表格（讓兩區塊同步）
+            const currentMonth = $('#month_picker').val();
+            renderTable(allData, currentMonth);
+
+            // 更新統計
+            updateStats(allData);
+        } else {
+            showToast('更新失敗：' + data.message, 'error');
+        }
+    })
+    .catch(() => showToast('網路連線錯誤', 'error'));
+}
+
+// ── DELETE ──
+function deleteAnnouncement(event, btn) {
+    event.stopPropagation();
+    const row = $(btn).closest('tr');
+    const id = row.data('id');
+    const title = row.find('.title-text').text();
+
+    if (!confirm(`確定要永久刪除公告「${title}」嗎？此操作無法復原。`)) return;
+
+    const fd = new FormData();
+    fd.append('id', id);
+
+    fetch('api/delete_announcement.php', { method:'POST', body:fd })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            if (row.find('.btn-star').hasClass('active')) {
+                let idx = -1;
+                $("#div_owl .item").each(function(i){ if ($(this).data('id') == id) idx = i; });
+                if (idx !== -1) { owl.trigger('remove.owl.carousel', [idx]); owl.trigger('refresh.owl.carousel'); }
+            }
+            row.addClass('removing');
+            row.fadeOut(300, function(){ $(this).remove(); refreshCarouselEmpty(); });
+            showToast('公告已刪除');
+        } else {
+            showToast('刪除失敗：' + data.message, 'error');
+        }
+    })
+    .catch(() => showToast('伺服器連線失敗', 'error'));
+}
+
+// ── EDIT ──
+function openEditModal(event, btn) {
+    event.stopPropagation();
+    const row = $(btn).closest('tr');
+    $("#edit_id").val(row.data('id'));
+    $("#edit_title").val(row.find('.title-text').text());
+    $("#edit_link").val(row.data('link') || '');
+    $("#Edit_IMG, #Edit_PDF").val('');
+    document.getElementById('modal_edit').style.display = 'flex';
+}
+
+function submitEdit() {
+    const id    = $("#edit_id").val();
+    const title = $("#edit_title").val().trim();
+    const link  = $("#edit_link").val().trim();
+
+    if (!title) { showToast('請輸入公告標題', 'error'); return; }
+
+    const $btn = $('#modal_edit .btn-primary');
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner spinner"></i> 儲存中...');
+
+    const fd = new FormData();
+    fd.append("id", id);
+    fd.append("title", title);
+    fd.append("linkUrl", link);
+    if (document.getElementById("Edit_IMG").files[0]) fd.append("img", document.getElementById("Edit_IMG").files[0]);
+    if (document.getElementById("Edit_PDF").files[0]) fd.append("pdf", document.getElementById("Edit_PDF").files[0]);
+
+    fetch('api/edit_announcement.php', { method:'POST', body:fd })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // 直接更新記憶體，不需整頁重載
+            const item = allData.find(d => d.id == id);
+            if (item) {
+                item.title   = title;
+                item.linkUrl = link;
+                if (data.imgPath) item.imgPath = data.imgPath;
+                if (data.pdfPath) item.pdfPath = data.pdfPath;
+            }
+            document.getElementById('modal_edit').style.display = 'none';
+            renderTable(allData, $('#month_picker').val());
+            showToast('修改成功！');
+        } else {
+            showToast('修改失敗：' + (data.message || '未知錯誤'), 'error');
+        }
+    })
+    .catch(() => showToast('連線伺服器發生錯誤，請稍後再試', 'error'))
+    .finally(() => {
+        $btn.prop('disabled', false).html('<i class="fas fa-save"></i> 儲存修改');
+    });
+}
+
+// ── AUDIT LOG ──
+let auditData = [];
+
+function loadAuditLog() {
+    fetch('api/audit_log.php?limit=200')
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success) return;
+        auditData = res.logs;
+
+        // 建立操作人員篩選選項
+        const operators = [...new Set(auditData.map(l => l.operator))];
+        const sel = document.getElementById('audit_operator_filter');
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">全部人員</option>';
+        operators.forEach(op => {
+            const o = document.createElement('option');
+            o.value = op; o.textContent = op;
+            if (op === cur) o.selected = true;
+            sel.appendChild(o);
+        });
+
+        renderAuditTable();
+    })
+    .catch(() => {
+        document.getElementById('audit_tbody').innerHTML =
+            '<tr><td colspan="5" class="audit-empty">載入失敗，請重試</td></tr>';
+    });
+}
+
+function renderAuditTable() {
+    const opFilter     = document.getElementById('audit_operator_filter').value;
+    const actionFilter = document.getElementById('audit_action_filter').value;
+    const dateFilter   = document.getElementById('audit_date_filter').value;
+
+    const filtered = auditData.filter(log => {
+        if (opFilter     && log.operator !== opFilter) return false;
+        if (actionFilter && log.action   !== actionFilter) return false;
+        if (dateFilter   && !log.time.startsWith(dateFilter)) return false;
+        return true;
+    });
+
+    document.getElementById('audit_count').textContent =
+        `共 ${filtered.length} 筆紀錄`;
+
+    const tbody = document.getElementById('audit_tbody');
+    if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="audit-empty">目前無符合條件的紀錄</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(log => {
+        const badgeClass = {
+            '登入':'login','登出':'logout',
+            '新增公告':'add','編輯公告':'edit',
+            '刪除公告':'delete','加入焦點輪播':'star','移除焦點輪播':'star'
+        }[log.action] || 'edit';
+
+        return `<tr>
+            <td style="white-space:nowrap;color:var(--gray-500)">${log.time}</td>
+            <td><strong>${log.operator}</strong></td>
+            <td><span class="audit-badge ${badgeClass}">${log.action}</span></td>
+            <td style="color:var(--gray-500)">${log.detail || '—'}</td>
+            <td style="color:var(--gray-400);font-size:0.78rem">${log.ip}</td>
+        </tr>`;
+    }).join('');
+}
+
+
+function uploadFile() {
+    const title = $("#input_title").val().trim();
+    const status = $("#select_status").val();
+    const imgInput = document.getElementById("Input_IMG");
+    const pdfInput = document.getElementById("Input_PDF");
+
+    if (!title) { showToast('請輸入公告標題', 'error'); return; }
+    if (!imgInput.files.length && !pdfInput.files.length) {
+        showToast('請至少選擇一個檔案上傳', 'error'); return;
+    }
+
+    const $btn = $("#btn_上傳檔案");
+    $btn.html('<i class="fas fa-spinner spinner"></i> 處理中...').prop("disabled", true);
+
+    const fd = new FormData();
+    fd.append("title", title);
+    fd.append("status", status);
+    fd.append("linkUrl", $("#input_link").val().trim());
+    if (imgInput.files[0]) fd.append("img", imgInput.files[0]);
+    if (pdfInput.files[0]) fd.append("pdf", pdfInput.files[0]);
+
+    fetch('api/upload.php', { method:'POST', body:fd })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            // 加入記憶體並重新 render
+            allData.unshift(res.data);
+            const currentMonth = $('#month_picker').val();
+            renderTable(allData, currentMonth);
+            showToast('公告已成功發佈！');
+            $("#input_title").val('');
+            $("#input_link").val('');
+            $("#Input_IMG, #Input_PDF").val('');
+            updateStats(allData);
+        } else {
+            showToast('上傳失敗：' + res.message, 'error');
+        }
+    })
+    .catch(() => showToast('連線伺服器發生錯誤', 'error'))
+    .finally(() => $btn.html('<i class="fas fa-check-circle"></i> 發佈公告').prop("disabled", false));
+}
+</script>
+</body>
+</html>
