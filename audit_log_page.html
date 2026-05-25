@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>操作紀錄 — 院內公告系統</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=noto-sans-tc:300,400,500,700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #4a4e52;
+            --primary-mid: #6c757d;
+            --radius: 10px;
+            --gray-400: #adb5bd;
+            --gray-500: #6c757d;
+            --gray-600: #495057;
+            --gray-700: #343a40;
+            --gray-800: #212529;
+            --teal: #4a7260;
+            --red: #b85c4a;
+            --shadow-md: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans TC', "Microsoft JhengHei", Arial, sans-serif;
+            background: #f4f5f7;
+            color: #333a40;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: -2;
+            background:
+                radial-gradient(circle at 10% 15%, rgba(255,255,255,1) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 55% at 90% 80%, rgba(200,205,215,0.4) 0%, transparent 60%),
+                linear-gradient(150deg, #ffffff 0%, #eceef1 40%, #dee2e6 100%);
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255,255,255,0.9);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 16px rgba(140,100,60,0.08);
+        }
+        .top-bar-inner {
+            max-width: 1200px; margin: 0 auto;
+            padding: 0 24px; height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-icon { width: 36px; height: 36px; background: rgba(122,92,58,0.1); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 16px; }
+        .brand-name { font-size: 1rem; font-weight: 700; color: var(--primary); }
+        .brand-sub { font-size: 0.7rem; color: rgba(122,92,58,0.5); letter-spacing: 0.06em; }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 8px 18px; border: none; border-radius: 7px;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; font-family: inherit; text-decoration: none;
+        }
+        .btn-secondary {
+            background: rgba(122,92,58,0.08); color: var(--gray-600);
+            border: 1px solid rgba(122,92,58,0.18);
+        }
+        .btn-secondary:hover { background: rgba(122,92,58,0.15); }
+        .btn-primary { background: var(--primary); color: #fff8ee; }
+        .btn-primary:hover { background: var(--primary-mid); }
+        .btn-excel {
+            background: rgba(33,115,70,0.1); color: #1a6b40;
+            border: 1px solid rgba(33,115,70,0.22);
+        }
+        .btn-excel:hover { background: #217346; color: white; }
+
+        /* MAIN */
+        .main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+
+        /* CARD */
+        .card {
+            background: rgba(255,255,255,0.72);
+            backdrop-filter: blur(16px) saturate(120%);
+            border: 1px solid rgba(255,255,255,0.82);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+            margin-bottom: 20px; overflow: hidden;
+        }
+        .card-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid rgba(122,92,58,0.08);
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(255,248,238,0.3);
+        }
+        .card-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.95rem; font-weight: 700; color: var(--primary);
+        }
+        .card-title-icon {
+            width: 30px; height: 30px;
+            background: rgba(122,92,58,0.1); border: 1px solid rgba(122,92,58,0.18);
+            border-radius: 7px; display: flex; align-items: center; justify-content: center;
+            color: var(--primary-mid); font-size: 13px;
+        }
+        .card-body { padding: 20px 22px; }
+
+        /* STATS ROW */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(255,248,238,0.65); border: 1px solid rgba(255,255,255,0.8);
+            border-radius: var(--radius); padding: 16px 18px;
+            box-shadow: 0 4px 16px rgba(140,100,60,0.08);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .stat-icon {
+            width: 40px; height: 40px; border-radius: 9px;
+            display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;
+        }
+        .stat-icon.blue   { background: rgba(74,78,82,0.1);    color: #4a4e52; }
+        .stat-icon.green  { background: rgba(60,160,80,0.1);   color: #2a7a40; }
+        .stat-icon.red    { background: rgba(184,92,74,0.12);  color: #a0422e; }
+        .stat-icon.orange { background: rgba(196,120,64,0.12); color: #9a5c25; }
+        .stat-num { font-size: 1.5rem; font-weight: 700; color: var(--primary); line-height: 1; }
+        .stat-label { font-size: 0.73rem; color: var(--gray-400); margin-top: 3px; font-weight: 500; }
+
+        /* FILTER TOOLBAR */
+        .filter-bar {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            padding: 14px 22px; background: rgba(255,248,238,0.25);
+            border-bottom: 1px solid rgba(122,92,58,0.07);
+        }
+        .filter-bar label {
+            font-size: 0.8rem; font-weight: 600; color: var(--gray-600); white-space: nowrap;
+        }
+        .filter-bar select, .filter-bar input[type="date"], .filter-bar input[type="text"] {
+            font-size: 0.82rem; padding: 6px 10px;
+            border: 1px solid rgba(122,92,58,0.2); border-radius: 7px;
+            background: rgba(255,248,238,0.8); color: var(--gray-700);
+            height: 34px; font-family: inherit;
+        }
+        .filter-bar input[type="text"] { width: 200px; }
+        .filter-divider { width: 1px; height: 22px; background: rgba(122,92,58,0.15); margin: 0 4px; }
+        .filter-count {
+            margin-left: auto; font-size: 0.82rem; color: var(--gray-500); white-space: nowrap;
+        }
+
+        /* TABLE */
+        .table-wrap { overflow-x: auto; }
+        .audit-table {
+            width: 100%; border-collapse: collapse;
+            font-size: 0.84rem; background: transparent;
+        }
+        .audit-table th {
+            background: rgba(122,92,58,0.06); color: var(--gray-600);
+            font-weight: 700; padding: 10px 14px; text-align: left;
+            border-bottom: 1px solid rgba(122,92,58,0.12); white-space: nowrap;
+            font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;
+        }
+        .audit-table td {
+            padding: 10px 14px; border-bottom: 1px solid rgba(122,92,58,0.07);
+            color: var(--gray-700); vertical-align: middle;
+        }
+        .audit-table tr:last-child td { border-bottom: none; }
+        .audit-table tr:hover td { background: rgba(122,92,58,0.03); }
+
+        .audit-badge {
+            display: inline-block; font-size: 0.74rem;
+            padding: 3px 10px; border-radius: 20px; font-weight: 600;
+        }
+        .audit-badge.login  { background: rgba(60,160,80,0.12);   color: #2a7a40; }
+        .audit-badge.logout { background: rgba(120,120,120,0.12);  color: #555; }
+        .audit-badge.add    { background: rgba(70,120,200,0.12);   color: #2a5ba0; }
+        .audit-badge.edit   { background: rgba(200,140,30,0.13);   color: #7a5000; }
+        .audit-badge.delete { background: rgba(200,60,60,0.12);    color: #a02020; }
+        .audit-badge.star   { background: rgba(200,160,0,0.13);    color: #806000; }
+        .audit-badge.pin    { background: rgba(106,143,122,0.14);  color: #3a6650; }
+        .audit-empty {
+            text-align: center; padding: 48px 20px; color: var(--gray-400); font-size: 0.9rem;
+        }
+        .audit-empty i { font-size: 2rem; display: block; margin-bottom: 10px; color: rgba(122,92,58,0.18); }
+
+        /* PAGINATION */
+        .pagination {
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; padding: 16px;
+        }
+        .page-btn {
+            min-width: 34px; height: 34px; border-radius: 7px;
+            border: 1px solid rgba(122,92,58,0.2);
+            background: rgba(255,248,238,0.6); color: var(--gray-600);
+            font-size: 0.83rem; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 10px; font-family: inherit; transition: all 0.15s;
+        }
+        .page-btn:hover { background: rgba(122,92,58,0.1); color: var(--primary); }
+        .page-btn.active { background: var(--primary); color: #fff8ee; border-color: var(--primary); }
+        .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .page-info { font-size: 0.82rem; color: var(--gray-500); padding: 0 6px; }
+
+        /* AUTH OVERLAY */
+        #auth_overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(100,70,40,0.25); z-index: 500;
+            backdrop-filter: blur(10px); align-items: center; justify-content: center;
+        }
+        #auth_overlay.show { display: flex; }
+        .auth-box {
+            background: rgba(255,248,238,0.9); border: 1px solid rgba(255,255,255,0.9);
+            border-radius: 14px; padding: 36px 40px; text-align: center;
+            box-shadow: 0 20px 60px rgba(140,100,60,0.18); max-width: 340px; width: 90%;
+        }
+        .auth-box i { font-size: 2.5rem; color: rgba(122,92,58,0.5); margin-bottom: 14px; display: block; }
+        .auth-box h2 { font-size: 1rem; color: var(--primary); margin-bottom: 8px; }
+        .auth-box p { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 20px; }
+
+        /* TOAST */
+        .toast-container { position: fixed; top: 76px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 8px; }
+        .toast {
+            background: rgba(255,248,238,0.9); backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.88); border-radius: 8px;
+            padding: 12px 18px; box-shadow: 0 8px 28px rgba(140,100,60,0.14);
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.88rem; font-weight: 500; color: var(--gray-800);
+            min-width: 240px; animation: toastIn 0.3s ease; border-left: 3px solid var(--teal);
+        }
+        .toast.error { border-left-color: var(--red); }
+        @keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:none; } }
+
+        @media (max-width: 768px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .filter-bar { flex-wrap: wrap; }
+            .filter-bar input[type="text"] { width: 140px; }
+            .top-bar-inner { padding: 0 14px; }
+            .main { padding: 16px 14px; }
+        }
+
+        /* 申請單位下拉搜尋 */
+        .unit-search-wrap {
+            position: relative; display: inline-block;
+        }
+        .unit-search-wrap input {
+            width: 160px;
+        }
+        #f_unit_dropdown {
+            display: none;
+            position: absolute; top: calc(100% + 4px); left: 0;
+            width: 280px; max-height: 240px; overflow-y: auto;
+            background: rgba(255,248,238,0.97);
+            border: 1px solid rgba(122,92,58,0.2);
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(140,100,60,0.14);
+            z-index: 500;
+        }
+        #f_unit_dropdown .u-opt {
+            padding: 7px 13px; cursor: pointer;
+            font-size: 0.82rem; color: #444;
+            border-bottom: 1px solid rgba(122,92,58,0.06);
+        }
+        #f_unit_dropdown .u-opt:hover { background: rgba(122,92,58,0.07); }
+        #f_unit_dropdown .u-opt .u-code { color: #8a6a40; font-weight: 600; margin-right: 5px; }
+        #f_unit_dropdown .u-empty { padding: 10px 14px; color: #aaa; font-size: 0.82rem; }
+
+        /* 刪除按鈕 */
+        .btn-row-delete {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 6px; font-size: 0.76rem;
+            font-weight: 600; cursor: pointer; border: none;
+            background: rgba(184,92,74,0.1); color: #a0422e;
+            border: 1px solid rgba(184,92,74,0.22);
+            font-family: inherit; transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .btn-row-delete:hover {
+            background: rgba(184,92,74,0.18);
+            box-shadow: 0 2px 8px rgba(184,92,74,0.15);
+            transform: translateY(-1px);
+        }
+
+        /* 確認 Modal */
+        #confirm_modal {
+            display: none; position: fixed; inset: 0; z-index: 2000;
+            background: rgba(60,40,20,0.35); backdrop-filter: blur(8px);
+            align-items: center; justify-content: center;
+        }
+        #confirm_modal.show { display: flex; }
+        .confirm-box {
+            background: rgba(255,248,238,0.97);
+            border: 1px solid rgba(255,255,255,0.9);
+            border-radius: 14px; padding: 32px 36px;
+            text-align: center; max-width: 380px; width: 90%;
+            box-shadow: 0 20px 60px rgba(140,100,60,0.2);
+            animation: toastIn 0.2s ease;
+        }
+        .confirm-box .ci { font-size: 2.2rem; color: #c06040; margin-bottom: 12px; }
+        .confirm-box h3 { font-size: 1rem; color: var(--primary); margin-bottom: 8px; }
+        .confirm-box p {
+            font-size: 0.84rem; color: var(--gray-500);
+            line-height: 1.6; margin-bottom: 20px;
+        }
+        .confirm-box p strong { color: var(--gray-700); }
+        .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+        .btn-confirm-del {
+            padding: 9px 22px; border-radius: 7px; font-size: 0.85rem; font-weight: 700;
+            cursor: pointer; border: none; font-family: inherit;
+            background: #b85c4a; color: #fff; transition: background 0.2s;
+        }
+        .btn-confirm-del:hover { background: #a04030; }
+        .btn-confirm-cancel {
+            padding: 9px 22px; border-radius: 7px; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; font-family: inherit;
+            background: rgba(122,92,58,0.08); color: var(--gray-600);
+            border: 1px solid rgba(122,92,58,0.18); transition: background 0.2s;
+        }
+        .btn-confirm-cancel:hover { background: rgba(122,92,58,0.15); }
+    </style>
+</head>
+<body>
+
+<div class="toast-container" id="toast_container"></div>
+
+<!-- 刪除確認 Modal -->
+<div id="confirm_modal">
+    <div class="confirm-box">
+        <div class="ci"><i class="fas fa-exclamation-triangle"></i></div>
+        <h3>確認刪除此筆紀錄？</h3>
+        <p id="confirm_desc">此操作無法還原，刪除後統計數字將同步更新。</p>
+        <div class="confirm-actions">
+            <button class="btn-confirm-cancel" onclick="closeConfirm()">取消</button>
+            <button class="btn-confirm-del" id="confirm_ok_btn" onclick="executeDelete()">
+                <i class="fas fa-trash-alt"></i> 確認刪除
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- AUTH OVERLAY -->
+<div id="auth_overlay">
+    <div class="auth-box">
+        <i class="fas fa-lock"></i>
+        <h2>需要管理員權限</h2>
+        <p>此頁面僅限管理員查看，請先在主系統登入後再開啟此頁面。</p>
+        <a href="index.html" class="btn btn-primary" style="justify-content:center;width:100%;">
+            <i class="fas fa-arrow-left"></i> 返回主系統登入
+        </a>
+    </div>
+</div>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+    <div class="top-bar-inner">
+        <div class="brand">
+            <div class="brand-icon"><i class="fas fa-history"></i></div>
+            <div>
+                <div class="brand-name">操作紀錄</div>
+                <div class="brand-sub">AUDIT LOG</div>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span id="header_date" style="font-size:0.8rem;color:rgba(90,58,30,0.5);"></span>
+            <button class="btn btn-excel" onclick="exportExcel()" id="btn_export">
+                <i class="fas fa-file-excel"></i> 匯出 Excel
+            </button>
+            <button class="btn btn-secondary" onclick="loadLogs()">
+                <i class="fas fa-sync-alt"></i> 重新整理
+            </button>
+            <a href="index.html" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 返回主系統
+            </a>
+        </div>
+    </div>
+</header>
+
+<div class="main">
+
+    <!-- STATS ROW -->
+    <div class="stats-row" id="stats_row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-list-alt"></i></div>
+            <div><div class="stat-num" id="s_total">—</div><div class="stat-label">總紀錄筆數</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-sign-in-alt"></i></div>
+            <div><div class="stat-num" id="s_login">—</div><div class="stat-label">登入次數</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-plus-circle"></i></div>
+            <div><div class="stat-num" id="s_add">—</div><div class="stat-label">新增／覆蓋公告</div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-trash-alt"></i></div>
+            <div><div class="stat-num" id="s_delete">—</div><div class="stat-label">刪除公告</div></div>
+        </div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-title-icon"><i class="fas fa-table"></i></div>
+                完整操作紀錄
+            </div>
+            <span id="logged_as" style="font-size:0.8rem;color:var(--gray-400);"></span>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+            <label><i class="fas fa-search" style="margin-right:4px;opacity:0.6;"></i>關鍵字</label>
+            <input type="text" id="f_keyword" placeholder="搜尋標題或說明..." oninput="applyFilter()">
+
+            <div class="filter-divider"></div>
+
+            <label>人員</label>
+            <select id="f_operator" onchange="applyFilter()">
+                <option value="">全部人員</option>
+            </select>
+
+            <label>動作</label>
+            <select id="f_action" onchange="applyFilter()">
+                <option value="">全部動作</option>
+                <option>登入</option><option>登出</option>
+                <option value="__publish__">新增／覆蓋公告</option>
+                <option>編輯公告</option><option>刪除公告</option>
+                <option>加入焦點輪播</option><option>移除焦點輪播</option>
+                <option>跨月釘選</option><option>取消跨月釘選</option>
+            </select>
+
+            <label>公告大項</label>
+            <select id="f_category" onchange="applyFilter()">
+                <option value="">全部大項</option>
+                <option>一般公告</option>
+                <option>全院宣導</option>
+                <option>人資公告</option>
+                <option>JIT</option>
+            </select>
+
+            <label>月份</label>
+            <input type="month" id="f_date" onchange="applyFilter()" title="篩選月份">
+
+            <label>申請單位</label>
+            <div class="unit-search-wrap">
+                <input type="text" id="f_unit" placeholder="輸入代號或名稱..." autocomplete="off"
+                    oninput="filterUnitDropdown()" onfocus="showUnitFilterDropdown()" onblur="hideUnitFilterDropdown()"
+                    style="width:160px;">
+                <div id="f_unit_dropdown"></div>
+            </div>
+
+            <button class="btn btn-secondary" style="padding:5px 12px;font-size:0.8rem;" onclick="clearFilter()">
+                <i class="fas fa-times"></i> 清除篩選
+            </button>
+
+            <span class="filter-count" id="filter_count"></span>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-wrap">
+            <table class="audit-table" id="audit_table">
+                <thead>
+                    <tr>
+                        <th>時間</th>
+                        <th>操作人員</th>
+                        <th>動作</th>
+                        <th>申請單位</th>
+                        <th>說明</th>
+                        <th>公告大項</th>
+                        <th style="text-align:center;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="audit_tbody">
+                    <tr><td colspan="6" class="audit-empty">
+                        <i class="fas fa-spinner fa-spin"></i><br>載入中...
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const PAGE_SIZE = 30;
+let allLogs     = [];
+let filtered    = [];
+let currentPage = 1;
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('header_date').textContent =
+        new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+
+    checkAuth();
+});
+
+function checkAuth() {
+    fetch('api/check_auth.php')
+    .then(r => r.json())
+    .then(data => {
+        if (!data.loggedIn) {
+            document.getElementById('auth_overlay').classList.add('show');
+        } else {
+            if (data.adminName) {
+                document.getElementById('logged_as').textContent = `登入者：${data.adminName}`;
+            }
+            loadLogs();
+        }
+    })
+    .catch(() => {
+        document.getElementById('auth_overlay').classList.add('show');
+    });
+}
+
+function loadLogs() {
+    document.getElementById('audit_tbody').innerHTML =
+        '<tr><td colspan="7" class="audit-empty"><i class="fas fa-spinner fa-spin"></i><br>載入中...</td></tr>';
+
+    fetch('api/audit_log.php?limit=500')
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success) throw new Error('API 回傳失敗');
+        allLogs = res.logs;
+        buildOperatorOptions();
+        updateStats();
+        applyFilter();
+    })
+    .catch(() => {
+        document.getElementById('audit_tbody').innerHTML =
+            '<tr><td colspan="7" class="audit-empty"><i class="fas fa-exclamation-circle"></i><br>載入失敗，請重新整理</td></tr>';
+    });
+}
+
+function buildOperatorOptions() {
+    const sel  = document.getElementById('f_operator');
+    const cur  = sel.value;
+
+    // ★ 白名單：與 config.php 的 ADMIN_ACCOUNTS 保持一致
+    //   日後新增/刪除帳號時，同步更新這裡即可
+    const VALID_OPERATORS = ['視聽中心', '教學部', '主任'];
+
+    const ops = [...new Set(allLogs.map(l => l.operator))]
+        .filter(op => VALID_OPERATORS.includes(op));   // 過濾舊帳號與「未知」
+
+    sel.innerHTML = '<option value="">全部人員</option>';
+    ops.forEach(op => {
+        const o = document.createElement('option');
+        o.value = op; o.textContent = op;
+        if (op === cur) o.selected = true;
+        sel.appendChild(o);
+    });
+}
+
+function updateStats() {
+    document.getElementById('s_total').textContent  = allLogs.length;
+    document.getElementById('s_login').textContent  = allLogs.filter(l => l.action === '登入').length;
+    document.getElementById('s_add').textContent    = allLogs.filter(l => l.action === '新增公告' || l.action === '覆蓋公告').length;
+    document.getElementById('s_delete').textContent = allLogs.filter(l => l.action === '刪除公告').length;
+}
+
+// ── PARSE DETAIL / UNIT / CATEGORY ──
+function parseAuditDetail(raw) {
+    const s = raw || '';
+
+    // 新格式：標題【類別：xxx】【申請：xxx】
+    const mUnit = s.match(/【申請：(.+?)】/);
+    const mCat  = s.match(/【類別：(.+?)】/);
+
+    if (mCat) {
+        // 新格式：類別從標記取得
+        return {
+            detail:   s.replace(/【申請：.+?】/g, '').replace(/【類別：.+?】/g, '').trim() || '',
+            unit:     mUnit ? mUnit[1] : '',
+            category: mCat[1],
+        };
+    }
+
+    // 舊格式：「全院宣導｜標題」或「人資公告｜標題【申請：xxx】」
+    const CATEGORIES = ['一般公告', '全院宣導', '人資公告', 'JIT'];
+    const pipeIdx = s.indexOf('｜');
+    if (pipeIdx !== -1) {
+        const prefix = s.slice(0, pipeIdx).trim();
+        if (CATEGORIES.includes(prefix)) {
+            const rest = s.slice(pipeIdx + 1).replace(/【申請：.+?】/g, '').trim();
+            return {
+                detail:   rest || '',
+                unit:     mUnit ? mUnit[1] : '',
+                category: prefix,
+            };
+        }
+    }
+
+    // 無法識別：整段當 detail
+    return {
+        detail:   s.replace(/【申請：.+?】/g, '').trim() || '',
+        unit:     mUnit ? mUnit[1] : '',
+        category: '',
+    };
+}
+
+// ── FILTER ──
+function applyFilter() {
+    const kw     = document.getElementById('f_keyword').value.trim().toLowerCase();
+    const op     = document.getElementById('f_operator').value;
+    const action = document.getElementById('f_action').value;
+    const month  = document.getElementById('f_date').value;       // "YYYY-MM"
+    const unitKw = document.getElementById('f_unit').value.trim().toLowerCase();
+    const catKw  = document.getElementById('f_category').value;   // 精確比對
+
+    filtered = allLogs.filter(log => {
+        if (op) { if (log.operator !== op) return false; }
+        if (action === '__publish__') {
+            if (log.action !== '新增公告' && log.action !== '覆蓋公告') return false;
+        } else if (action) {
+            if (log.action !== action) return false;
+        }
+        if (month  && !log.time.startsWith(month))      return false;
+        const { detail, unit, category } = parseAuditDetail(log.detail);
+        if (unitKw) {
+            // 直接比對名稱
+            const nameMatch = unit.toLowerCase().includes(unitKw);
+            // 也支援輸入代號反查（4220 → 視聽中心）
+            const codeMatch = !nameMatch && (() => {
+                const found = AUDIT_UNIT_LIST.find(u => u.s.startsWith(unitKw) && u.n === unit);
+                return !!found;
+            })();
+            if (!nameMatch && !codeMatch) return false;
+        }
+        if (catKw  && category !== catKw)                         return false;
+        if (kw && !(
+            log.operator.toLowerCase().includes(kw) ||
+            log.action.toLowerCase().includes(kw)   ||
+            detail.toLowerCase().includes(kw)       ||
+            unit.toLowerCase().includes(kw)         ||
+            category.toLowerCase().includes(kw)
+        )) return false;
+        return true;
+    });
+
+    currentPage = 1;
+    document.getElementById('filter_count').textContent =
+        filtered.length < allLogs.length
+            ? `符合 ${filtered.length} 筆（共 ${allLogs.length} 筆）`
+            : `共 ${allLogs.length} 筆`;
+
+    renderTable();
+    renderPagination();
+}
+
+function clearFilter() {
+    document.getElementById('f_keyword').value  = '';
+    document.getElementById('f_operator').value = '';
+    document.getElementById('f_action').value   = '';
+    document.getElementById('f_date').value     = '';
+    document.getElementById('f_unit').value     = '';
+    document.getElementById('f_category').value = '';
+    applyFilter();
+}
+
+// ── RENDER TABLE ──
+function renderTable() {
+    const start  = (currentPage - 1) * PAGE_SIZE;
+    const page   = filtered.slice(start, start + PAGE_SIZE);
+    const tbody  = document.getElementById('audit_tbody');
+
+    if (!page.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="audit-empty"><i class="fas fa-inbox"></i><br>目前無符合條件的紀錄</td></tr>';
+        return;
+    }
+
+    const catColors = {
+        '一般公告': 'background:rgba(70,120,200,0.1);color:#2a5ba0;',
+        '全院宣導': 'background:rgba(60,160,80,0.1);color:#2a7a40;',
+        '人資公告': 'background:rgba(200,140,30,0.13);color:#7a5000;',
+        'JIT':      'background:rgba(150,60,180,0.1);color:#6a1a90;',
+    };
+
+    tbody.innerHTML = page.map(log => {
+        const badgeClass = {
+            '登入':'login','登出':'logout',
+            '新增公告':'add','編輯公告':'edit','覆蓋公告':'add',
+            '刪除公告':'delete','加入焦點輪播':'star','移除焦點輪播':'star',
+            '跨月釘選':'pin','取消跨月釘選':'logout'
+        }[log.action] || 'edit';
+
+        const kw = document.getElementById('f_keyword').value.trim();
+        const { detail, unit, category } = parseAuditDetail(log.detail);
+        const detailHtml   = kw ? highlight(detail || '—', kw) : (detail || '—');
+        const unitHtml     = kw ? highlight(unit, kw) : unit;
+        const operatorHtml = kw ? highlight(log.operator, kw) : log.operator;
+
+        const catStyle = catColors[category] || 'background:rgba(120,120,120,0.1);color:#555;';
+        const catHtml  = category
+            ? `<span class="audit-badge" style="${catStyle}">${category}</span>`
+            : '<span style="color:var(--gray-400)">—</span>';
+
+        // 動作顯示：新增公告 / 覆蓋公告 都顯示「新增／覆蓋公告」
+        const actionLabel = (log.action === '新增公告' || log.action === '覆蓋公告')
+            ? '新增／覆蓋公告' : log.action;
+
+        const isPublish = (log.action === '新增公告' || log.action === '覆蓋公告');
+        const descForConfirm = `${log.time}　${detail || '—'}`;
+        const deleteBtn = isPublish
+            ? `<button class="btn-row-delete" onclick="confirmDelete(${log.id}, '${descForConfirm.replace(/'/g,"\\'")}')" title="刪除此筆紀錄">
+                   <i class="fas fa-trash-alt"></i> 刪除
+               </button>`
+            : '<span style="color:var(--gray-400);font-size:0.78rem;">—</span>';
+
+        return `<tr>
+            <td style="white-space:nowrap;color:var(--gray-500);font-variant-numeric:tabular-nums;">${log.time}</td>
+            <td><strong>${operatorHtml}</strong></td>
+            <td><span class="audit-badge ${badgeClass}">${actionLabel}</span></td>
+            <td style="color:var(--gray-600);font-size:0.8rem;">${unitHtml || '<span style="color:var(--gray-400)">—</span>'}</td>
+            <td style="color:var(--gray-500);">${detailHtml}</td>
+            <td>${catHtml}</td>
+            <td style="text-align:center;">${deleteBtn}</td>
+        </tr>`;
+    }).join('');
+}
+
+function highlight(text, kw) {
+    if (!kw) return text;
+    const re = new RegExp(`(${kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+    return text.replace(re, '<mark style="background:rgba(196,154,60,0.3);border-radius:2px;padding:0 1px;">$1</mark>');
+}
+
+// ── PAGINATION ──
+function renderPagination() {
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    const el = document.getElementById('pagination');
+    if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+    let html = '';
+    html += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>
+        <i class="fas fa-chevron-left"></i>
+    </button>`;
+
+    for (let i = 1; i <= totalPages; i++) {
+        if (totalPages > 8 && i > 3 && i < totalPages - 1 && Math.abs(i - currentPage) > 2) {
+            if (i === 4 || i === totalPages - 2) html += `<span class="page-info">…</span>`;
+            continue;
+        }
+        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    }
+
+    html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>
+        <i class="fas fa-chevron-right"></i>
+    </button>`;
+    html += `<span class="page-info">第 ${currentPage} / ${totalPages} 頁</span>`;
+    el.innerHTML = html;
+}
+
+function goPage(p) {
+    const total = Math.ceil(filtered.length / PAGE_SIZE);
+    if (p < 1 || p > total) return;
+    currentPage = p;
+    renderTable();
+    renderPagination();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── EXPORT EXCEL ──
+function exportExcel() {
+    if (!filtered.length) { showToast('目前無資料可匯出', 'error'); return; }
+
+    const wsData = [['時間','操作人員','動作','申請單位','說明','公告大項']];
+    filtered.forEach(l => {
+        const { detail, unit, category } = parseAuditDetail(l.detail);
+        const actionLabel = (l.action === '新增公告' || l.action === '覆蓋公告') ? '新增／覆蓋公告' : l.action;
+        wsData.push([l.time, l.operator, actionLabel, unit, detail, category]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [{wch:20},{wch:12},{wch:16},{wch:20},{wch:44},{wch:14}];
+
+    const wb = XLSX.utils.book_new();
+    const dateStr = new Date().toISOString().slice(0,10);
+    XLSX.utils.book_append_sheet(wb, ws, '操作紀錄');
+    XLSX.writeFile(wb, `操作紀錄_${dateStr}.xlsx`);
+    showToast(`已匯出 ${filtered.length} 筆紀錄`);
+}
+
+// ── DELETE LOG ──
+let _pendingDeleteId = null;
+
+function confirmDelete(logId, desc) {
+    _pendingDeleteId = logId;
+    document.getElementById('confirm_desc').innerHTML =
+        `確認後此筆紀錄將永久移除，統計數字將同步更新。<br><br>` +
+        `<strong style="font-size:0.82rem;">${desc}</strong>`;
+    document.getElementById('confirm_modal').classList.add('show');
+}
+
+function closeConfirm() {
+    _pendingDeleteId = null;
+    document.getElementById('confirm_modal').classList.remove('show');
+}
+
+function executeDelete() {
+    if (!_pendingDeleteId) return;
+    const id = _pendingDeleteId;
+    const btn = document.getElementById('confirm_ok_btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 刪除中…';
+
+    fetch('api/delete_audit_log.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    })
+    .then(r => r.json())
+    .then(res => {
+        closeConfirm();
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-trash-alt"></i> 確認刪除';
+        if (res.success) {
+            // 從本地陣列移除，免得重新 fetch
+            allLogs = allLogs.filter(l => l.id !== id);
+            updateStats();
+            applyFilter();
+            showToast('已刪除，統計已更新');
+        } else {
+            showToast(res.message || '刪除失敗，請稍後再試', 'error');
+        }
+    })
+    .catch(() => {
+        closeConfirm();
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-trash-alt"></i> 確認刪除';
+        showToast('網路錯誤，刪除失敗', 'error');
+    });
+}
+
+// 點擊背景關閉
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('confirm_modal').addEventListener('click', function(e) {
+        if (e.target === this) closeConfirm();
+    });
+});
+
+// ── TOAST ──
+function showToast(msg, type = 'success') {
+    const id = 'toast_' + Date.now();
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-times-circle';
+    document.getElementById('toast_container').insertAdjacentHTML('beforeend',
+        `<div class="toast ${type}" id="${id}"><i class="fas ${icon}"></i><span>${msg}</span></div>`
+    );
+    setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.style.opacity = '0', el.style.transition = 'opacity 0.3s', setTimeout(() => el.remove(), 300);
+    }, 3000);
+}
+
+// ── 申請單位下拉搜尋（篩選列） ──
+const AUDIT_UNIT_LIST = [
+  {c:'0000',n:'董事會',l:'0000-董事會',s:'00000000-董事會'},
+  {c:'1000',n:'經營決策委員會',l:'1000-經營決策委員會',s:'10001000-經營決策委員會'},
+  {c:'1010',n:'稽核室',l:'1010-稽核室',s:'10101010-稽核室'},
+  {c:'2000',n:'院長室',l:'2000-院長室',s:'20002000-院長室'},
+  {c:'2001',n:'院長室-財務成本組',l:'2001-院長室-財務成本組',s:'20012001-院長室-財務成本組'},
+  {c:'2005',n:'藝文發展委員會',l:'2005-藝文發展委員會',s:'20052005-藝文發展委員會'},
+  {c:'2010',n:'行政中心',l:'2010-行政中心',s:'20102010-行政中心'},
+  {c:'2011',n:'企劃室',l:'2011-企劃室',s:'20112011-企劃室'},
+  {c:'2012',n:'媒體公關',l:'2012-媒體公關',s:'20122012-媒體公關'},
+  {c:'2013',n:'文書組',l:'2013-文書組',s:'20132013-文書組'},
+  {c:'2014',n:'企劃管理部',l:'2014-企劃管理部',s:'20142014-企劃管理部'},
+  {c:'2020',n:'公共事務室',l:'2020-公共事務室',s:'20202020-公共事務室'},
+  {c:'2021',n:'公共事務室-醫病服務組',l:'2021-公共事務室-醫病服務組',s:'20212021-公共事務室-醫病服務組'},
+  {c:'2100',n:'人力資源部',l:'2100-人力資源部',s:'21002100-人力資源部'},
+  {c:'2200',n:'會計室',l:'2200-會計室',s:'22002200-會計室'},
+  {c:'2300',n:'醫療事務室',l:'2300-醫療事務室',s:'23002300-醫療事務室'},
+  {c:'2310',n:'醫療事務室-醫療服務組',l:'2310-醫療事務室-醫療服務組',s:'23102310-醫療事務室-醫療服務組'},
+  {c:'2320',n:'醫療事務室-住院服務組',l:'2320-醫療事務室-住院服務組',s:'23202320-醫療事務室-住院服務組'},
+  {c:'2330',n:'醫療事務室-申報業務組',l:'2330-醫療事務室-申報業務組',s:'23302330-醫療事務室-申報業務組'},
+  {c:'2340',n:'醫療事務室-綜合業務組',l:'2340-醫療事務室-綜合業務組',s:'23402340-醫療事務室-綜合業務組'},
+  {c:'2350',n:'病歷資訊管理室-病歷檔案組',l:'2350-病歷資訊管理室-病歷檔案組',s:'23502350-病歷資訊管理室-病歷檔案組'},
+  {c:'2360',n:'病歷資訊管理室-疾病分類組',l:'2360-病歷資訊管理室-疾病分類組',s:'23602360-病歷資訊管理室-疾病分類組'},
+  {c:'2370',n:'病歷資訊管理室-未完成病歷組',l:'2370-病歷資訊管理室-未完成病歷組',s:'23702370-病歷資訊管理室-未完成病歷組'},
+  {c:'2380',n:'醫療事務室-樹林院區',l:'2380-醫療事務室-樹林院區',s:'23802380-醫療事務室-樹林院區'},
+  {c:'2399',n:'病歷資訊管理室',l:'2399-病歷資訊管理室',s:'23992399-病歷資訊管理室'},
+  {c:'2400',n:'資訊室',l:'2400-資訊室',s:'24002400-資訊室'},
+  {c:'2410',n:'資訊室-門診組',l:'2410-資訊室-門診組',s:'24102410-資訊室-門診組'},
+  {c:'2420',n:'資訊室-住院組',l:'2420-資訊室-住院組',s:'24202420-資訊室-住院組'},
+  {c:'2430',n:'資訊室-醫技組',l:'2430-資訊室-醫技組',s:'24302430-資訊室-醫技組'},
+  {c:'2440',n:'資訊室-護理組',l:'2440-資訊室-護理組',s:'24402440-資訊室-護理組'},
+  {c:'2450',n:'資訊室-行政組',l:'2450-資訊室-行政組',s:'24502450-資訊室-行政組'},
+  {c:'2460',n:'資訊室-系統組',l:'2460-資訊室-系統組',s:'24602460-資訊室-系統組'},
+  {c:'2470',n:'資訊室-架構規劃維運組',l:'2470-資訊室-架構規劃維運組',s:'24702470-資訊室-架構規劃維運組'},
+  {c:'2500',n:'總務室',l:'2500-總務室',s:'25002500-總務室'},
+  {c:'2511',n:'總機小組',l:'2511-總機小組',s:'25112511-總機小組'},
+  {c:'2520',n:'總務室-管理組',l:'2520-總務室-管理組',s:'25202520-總務室-管理組'},
+  {c:'2530',n:'總務室-事務組',l:'2530-總務室-事務組',s:'25302530-總務室-事務組'},
+  {c:'2550',n:'總務室-出納組',l:'2550-總務室-出納組',s:'25502550-總務室-出納組'},
+  {c:'2600',n:'社會服務部',l:'2600-社會服務部',s:'26002600-社會服務部'},
+  {c:'2610',n:'社會服務部-社工組',l:'2610-社會服務部-社工組',s:'26102610-社會服務部-社工組'},
+  {c:'2620',n:'社會服務部-服務組',l:'2620-社會服務部-服務組',s:'26202620-社會服務部-服務組'},
+  {c:'2630',n:'社會服務部-樹林院區',l:'2630-社會服務部-樹林院區',s:'26302630-社會服務部-樹林院區'},
+  {c:'2700',n:'安全衛生管理室',l:'2700-安全衛生管理室',s:'27002700-安全衛生管理室'},
+  {c:'2800',n:'工務室',l:'2800-工務室',s:'28002800-工務室'},
+  {c:'2810',n:'工務室-行政規劃組',l:'2810-工務室-行政規劃組',s:'28102810-工務室-行政規劃組'},
+  {c:'2820',n:'工務室-機電組',l:'2820-工務室-機電組',s:'28202820-工務室-機電組'},
+  {c:'2830',n:'工務室-空調鍋爐組',l:'2830-工務室-空調鍋爐組',s:'28302830-工務室-空調鍋爐組'},
+  {c:'2840',n:'工務室-醫工組',l:'2840-工務室-醫工組',s:'28402840-工務室-醫工組'},
+  {c:'2850',n:'工務室-樹林院區',l:'2850-工務室-樹林院區',s:'28502850-工務室-樹林院區'},
+  {c:'2900',n:'資材室',l:'2900-資材室',s:'29002900-資材室'},
+  {c:'2910',n:'資材室-採購組',l:'2910-資材室-採購組',s:'29102910-資材室-採購組'},
+  {c:'2920',n:'資材室-補給組',l:'2920-資材室-補給組',s:'29202920-資材室-補給組'},
+  {c:'2922',n:'補給組-一般庫房',l:'2922-補給組-一般庫房',s:'29222922-補給組-一般庫房'},
+  {c:'2923',n:'補給組-衛材庫房',l:'2923-補給組-衛材庫房',s:'29232923-補給組-衛材庫房'},
+  {c:'2924',n:'洗縫部',l:'2924-洗縫部',s:'29242924-洗縫部'},
+  {c:'2930',n:'資材室-供應組',l:'2930-資材室-供應組',s:'29302930-資材室-供應組'},
+  {c:'2940',n:'資材室-財產管理組',l:'2940-資材室-財產管理組',s:'29402940-資材室-財產管理組'},
+  {c:'3000',n:'護理部',l:'3000-護理部',s:'30003000-護理部'},
+  {c:'3001',n:'護理部-輸送小組',l:'3001-護理部-輸送小組',s:'30013001-護理部-輸送小組'},
+  {c:'3002',n:'護理部-供應中心',l:'3002-護理部-供應中心',s:'30023002-護理部-供應中心'},
+  {c:'3003',n:'護理部-社區護理',l:'3003-護理部-社區護理',s:'30033003-護理部-社區護理'},
+  {c:'3004',n:'化學治療室',l:'3004-化學治療室',s:'30043004-化學治療室'},
+  {c:'3005',n:'感染控制小組',l:'3005-感染控制小組',s:'30053005-感染控制小組'},
+  {c:'3006',n:'呼吸器居家護理',l:'3006-呼吸器居家護理',s:'30063006-呼吸器居家護理'},
+  {c:'3007',n:'護理部-樹林院區',l:'3007-護理部-樹林院區',s:'30073007-護理部-樹林院區'},
+  {c:'3008',n:'血液透析護理',l:'3008-血液透析護理',s:'30083008-血液透析護理'},
+  {c:'3009',n:'腹膜透析護理',l:'3009-腹膜透析護理',s:'30093009-腹膜透析護理'},
+  {c:'300D',n:'奇美復華日間照顧中心',l:'300D-奇美復華日間照顧中心',s:'300d300d-奇美復華日間照顧中心'},
+  {c:'300H',n:'居家服務中心',l:'300H-居家服務中心',s:'300h300h-居家服務中心'},
+  {c:'3080',n:'台積電健康中心',l:'3080-台積電健康中心',s:'30803080-台積電健康中心'},
+  {c:'3101',n:'晉生慢性醫院',l:'3101-晉生慢性醫院',s:'31013101-晉生慢性醫院'},
+  {c:'3102',n:'晉生護理之家',l:'3102-晉生護理之家',s:'31023102-晉生護理之家'},
+  {c:'3110',n:'護理部-10樓A區',l:'3110-護理部-10樓A區',s:'31103110-護理部-10樓a區'},
+  {c:'3111',n:'護理部-10樓B區',l:'3111-護理部-10樓B區',s:'31113111-護理部-10樓b區'},
+  {c:'3113',n:'護理部-11樓A區',l:'3113-護理部-11樓A區',s:'31133113-護理部-11樓a區'},
+  {c:'3119',n:'護理部-12樓B區',l:'3119-護理部-12樓B區',s:'31193119-護理部-12樓b區'},
+  {c:'3120',n:'護理部-12樓A區',l:'3120-護理部-12樓A區',s:'31203120-護理部-12樓a區'},
+  {c:'3121',n:'護理部-2樓A區',l:'3121-護理部-2樓A區',s:'31213121-護理部-2樓a區'},
+  {c:'3122',n:'護理部-2樓B區',l:'3122-護理部-2樓B區',s:'31223122-護理部-2樓b區'},
+  {c:'3123',n:'護理部-2樓C區',l:'3123-護理部-2樓C區',s:'31233123-護理部-2樓c區'},
+  {c:'3130',n:'護理部-3樓A區',l:'3130-護理部-3樓A區',s:'31303130-護理部-3樓a區'},
+  {c:'3131',n:'護理部-3樓B區',l:'3131-護理部-3樓B區',s:'31313131-護理部-3樓b區'},
+  {c:'3132',n:'護理部-3樓C區',l:'3132-護理部-3樓C區',s:'31323132-護理部-3樓c區'},
+  {c:'3133',n:'護理部-3樓D區',l:'3133-護理部-3樓D區',s:'31333133-護理部-3樓d區'},
+  {c:'3140',n:'護理部-4樓A區',l:'3140-護理部-4樓A區',s:'31403140-護理部-4樓a區'},
+  {c:'3141',n:'護理部-4樓B區',l:'3141-護理部-4樓B區',s:'31413141-護理部-4樓b區'},
+  {c:'3142',n:'護理部-4樓C區',l:'3142-護理部-4樓C區',s:'31423142-護理部-4樓c區'},
+  {c:'3143',n:'護理部-4樓D區',l:'3143-護理部-4樓D區',s:'31433143-護理部-4樓d區'},
+  {c:'3150',n:'護理部-5樓A區',l:'3150-護理部-5樓A區',s:'31503150-護理部-5樓a區'},
+  {c:'3151',n:'護理部-5樓B區',l:'3151-護理部-5樓B區',s:'31513151-護理部-5樓b區'},
+  {c:'3152',n:'護理部-5樓C區',l:'3152-護理部-5樓C區',s:'31523152-護理部-5樓c區'},
+  {c:'3153',n:'護理部-5樓D區',l:'3153-護理部-5樓D區',s:'31533153-護理部-5樓d區'},
+  {c:'3160',n:'護理部-6樓A區',l:'3160-護理部-6樓A區',s:'31603160-護理部-6樓a區'},
+  {c:'3161',n:'護理部-6樓B區',l:'3161-護理部-6樓B區',s:'31613161-護理部-6樓b區'},
+  {c:'3170',n:'護理部-7樓A區',l:'3170-護理部-7樓A區',s:'31703170-護理部-7樓a區'},
+  {c:'3171',n:'護理部-7樓B區',l:'3171-護理部-7樓B區',s:'31713171-護理部-7樓b區'},
+  {c:'3180',n:'護理部-8樓A區',l:'3180-護理部-8樓A區',s:'31803180-護理部-8樓a區'},
+  {c:'3181',n:'護理部-8樓B區',l:'3181-護理部-8樓B區',s:'31813181-護理部-8樓b區'},
+  {c:'3182',n:'護理部-8樓C區',l:'3182-護理部-8樓C區',s:'31823182-護理部-8樓c區'},
+  {c:'3183',n:'奇恩病房',l:'3183-奇恩病房',s:'31833183-奇恩病房'},
+  {c:'3190',n:'護理部-9樓A區',l:'3190-護理部-9樓A區',s:'31903190-護理部-9樓a區'},
+  {c:'3191',n:'護理部-9樓B區',l:'3191-護理部-9樓B區',s:'31913191-護理部-9樓b區'},
+  {c:'3200',n:'護理部-急診室',l:'3200-護理部-急診室',s:'32003200-護理部-急診室'},
+  {c:'3210',n:'護理部-急診加護病房',l:'3210-護理部-急診加護病房',s:'32103210-護理部-急診加護病房'},
+  {c:'3300',n:'護理部-門診',l:'3300-護理部-門診',s:'33003300-護理部-門診'},
+  {c:'3301',n:'門診-注射室',l:'3301-門診-注射室',s:'33013301-門診-注射室'},
+  {c:'3400',n:'護理部-開刀房',l:'3400-護理部-開刀房',s:'34003400-護理部-開刀房'},
+  {c:'3401',n:'開刀房-1房',l:'3401-開刀房-1房',s:'34013401-開刀房-1房'},
+  {c:'3402',n:'開刀房-2房',l:'3402-開刀房-2房',s:'34023402-開刀房-2房'},
+  {c:'3403',n:'開刀房-3房',l:'3403-開刀房-3房',s:'34033403-開刀房-3房'},
+  {c:'3404',n:'開刀房-4房',l:'3404-開刀房-4房',s:'34043404-開刀房-4房'},
+  {c:'3405',n:'開刀房-5房',l:'3405-開刀房-5房',s:'34053405-開刀房-5房'},
+  {c:'3406',n:'開刀房-6房',l:'3406-開刀房-6房',s:'34063406-開刀房-6房'},
+  {c:'3407',n:'開刀房-7房',l:'3407-開刀房-7房',s:'34073407-開刀房-7房'},
+  {c:'3408',n:'開刀房-8房',l:'3408-開刀房-8房',s:'34083408-開刀房-8房'},
+  {c:'3409',n:'開刀房-9房',l:'3409-開刀房-9房',s:'34093409-開刀房-9房'},
+  {c:'3410',n:'開刀房-10房',l:'3410-開刀房-10房',s:'34103410-開刀房-10房'},
+  {c:'3420',n:'門診開刀房ROOM2',l:'3420-門診開刀房ROOM2',s:'34203420-門診開刀房room2'},
+  {c:'3421',n:'開刀房ROOM18',l:'3421-開刀房ROOM18',s:'34213421-開刀房room18'},
+  {c:'3422',n:'開刀房ROOM19',l:'3422-開刀房ROOM19',s:'34223422-開刀房room19'},
+  {c:'3430',n:'開刀房-供應中心',l:'3430-開刀房-供應中心',s:'34303430-開刀房-供應中心'},
+  {c:'3440',n:'開刀房-恢復室',l:'3440-開刀房-恢復室',s:'34403440-開刀房-恢復室'},
+  {c:'3450',n:'手術室專責護理',l:'3450-手術室專責護理',s:'34503450-手術室專責護理'},
+  {c:'3510',n:'護理部-3B加護病房',l:'3510-護理部-3B加護病房',s:'35103510-護理部-3b加護病房'},
+  {c:'3511',n:'護理部-6B加護病房',l:'3511-護理部-6B加護病房',s:'35113511-護理部-6b加護病房'},
+  {c:'3512',n:'2DICU',l:'3512-2DICU',s:'35123512-2dicu'},
+  {c:'3520',n:'護理部-3D加護病房',l:'3520-護理部-3D加護病房',s:'35203520-護理部-3d加護病房'},
+  {c:'3530',n:'護理部-5B加護病房',l:'3530-護理部-5B加護病房',s:'35303530-護理部-5b加護病房'},
+  {c:'3540',n:'護理部-6A加護病房',l:'3540-護理部-6A加護病房',s:'35403540-護理部-6a加護病房'},
+  {c:'3541',n:'呼吸照護中心',l:'3541-呼吸照護中心',s:'35413541-呼吸照護中心'},
+  {c:'3542',n:'門診手術病房',l:'3542-門診手術病房',s:'35423542-門診手術病房'},
+  {c:'3546',n:'慢性病房',l:'3546-慢性病房',s:'35463546-慢性病房'},
+  {c:'3550',n:'護理部-3C加護病房',l:'3550-護理部-3C加護病房',s:'35503550-護理部-3c加護病房'},
+  {c:'3560',n:'護理部-3A加護病房',l:'3560-護理部-3A加護病房',s:'35603560-護理部-3a加護病房'},
+  {c:'3561',n:'4B加護病房',l:'3561-4B加護病房',s:'35613561-4b加護病房'},
+  {c:'3570',n:'護理部-燙傷中心',l:'3570-護理部-燙傷中心',s:'35703570-護理部-燙傷中心'},
+  {c:'3575',n:'骨髓移植病房',l:'3575-骨髓移植病房',s:'35753575-骨髓移植病房'},
+  {c:'3580',n:'護理部-5C加護病房',l:'3580-護理部-5C加護病房',s:'35803580-護理部-5c加護病房'},
+  {c:'3590',n:'護理部-4A加護病房',l:'3590-護理部-4A加護病房',s:'35903590-護理部-4a加護病房'},
+  {c:'3591',n:'護理部-8A加護病房',l:'3591-護理部-8A加護病房',s:'35913591-護理部-8a加護病房'},
+  {c:'3592',n:'護理部-3AICU',l:'3592-護理部-3AICU',s:'35923592-護理部-3aicu'},
+  {c:'3593',n:'護理部-3BICU',l:'3593-護理部-3BICU',s:'35933593-護理部-3bicu'},
+  {c:'3595',n:'護理部-病嬰室',l:'3595-護理部-病嬰室',s:'35953595-護理部-病嬰室'},
+  {c:'3600',n:'產房',l:'3600-產房',s:'36003600-產房'},
+  {c:'3700',n:'護理部-嬰兒室',l:'3700-護理部-嬰兒室',s:'37003700-護理部-嬰兒室'},
+  {c:'3800',n:'護理部-洗腎室',l:'3800-護理部-洗腎室',s:'38003800-護理部-洗腎室'},
+  {c:'3930',n:'護理部-內科',l:'3930-護理部-內科',s:'39303930-護理部-內科'},
+  {c:'3950',n:'護理部-外科',l:'3950-護理部-外科',s:'39503950-護理部-外科'},
+  {c:'4000',n:'醫學研究部',l:'4000-醫學研究部',s:'40004000-醫學研究部'},
+  {c:'4020',n:'醫療大數據人工智慧運算中心',l:'4020-醫療大數據人工智慧運算中心',s:'40204020-醫療大數據人工智慧運算中心'},
+  {c:'4025',n:'實驗動物及技能中心',l:'4025-實驗動物及技能中心',s:'40254025-實驗動物及技能中心'},
+  {c:'4030',n:'醫學研究部-行政管理組',l:'4030-醫學研究部-行政管理組',s:'40304030-醫學研究部-行政管理組'},
+  {c:'4040',n:'新創醫材開發中心',l:'4040-新創醫材開發中心',s:'40404040-新創醫材開發中心'},
+  {c:'4100',n:'醫學圖書館',l:'4100-醫學圖書館',s:'41004100-醫學圖書館'},
+  {c:'4110',n:'醫學圖書館-圖書組',l:'4110-醫學圖書館-圖書組',s:'41104110-醫學圖書館-圖書組'},
+  {c:'4120',n:'教材組',l:'4120-教材組',s:'41204120-教材組'},
+  {c:'4200',n:'教學部/教學中心',l:'4200-教學部/教學中心',s:'42004200-教學部/教學中心'},
+  {c:'4210',n:'圖書館',l:'4210-圖書館',s:'42104210-圖書館'},
+  {c:'4220',n:'視聽中心',l:'4220-視聽中心',s:'42204220-視聽中心'},
+  {c:'4230',n:'臨床技能中心',l:'4230-臨床技能中心',s:'42304230-臨床技能中心'},
+  {c:'4250',n:'實證醫學暨醫療政策中心',l:'4250-實證醫學暨醫療政策中心',s:'42504250-實證醫學暨醫療政策中心'},
+  {c:'4300',n:'教師培育中心',l:'4300-教師培育中心',s:'43004300-教師培育中心'},
+  {c:'5000',n:'醫技部',l:'5000-醫技部',s:'50005000-醫技部'},
+  {c:'5100',n:'復健部(科)',l:'5100-復健部(科)',s:'51005100-復健部(科)'},
+  {c:'5103',n:'南區嬰幼兒發展中心',l:'5103-南區嬰幼兒發展中心',s:'51035103-南區嬰幼兒發展中心'},
+  {c:'5104',n:'蘆葦啟智中心',l:'5104-蘆葦啟智中心',s:'51045104-蘆葦啟智中心'},
+  {c:'5105',n:'德蘭啟智中心',l:'5105-德蘭啟智中心',s:'51055105-德蘭啟智中心'},
+  {c:'5106',n:'天壇養護中心',l:'5106-天壇養護中心',s:'51065106-天壇養護中心'},
+  {c:'5107',n:'瑞復益智中心',l:'5107-瑞復益智中心',s:'51075107-瑞復益智中心'},
+  {c:'510B',n:'復健科遲緩兒評估門診',l:'510B-復健科遲緩兒評估門診',s:'510b510b-復健科遲緩兒評估門診'},
+  {c:'510C',n:'鴻佳復健科',l:'510C-鴻佳復健科',s:'510c510c-鴻佳復健科'},
+  {c:'510G',n:'瑞復益智中心安平校區',l:'510G-瑞復益智中心安平校區',s:'510g510g-瑞復益智中心安平校區'},
+  {c:'5111',n:'復健部-物理治療組',l:'5111-復健部-物理治療組',s:'51115111-復健部-物理治療組'},
+  {c:'5121',n:'復健部-職能治療組',l:'5121-復健部-職能治療組',s:'51215121-復健部-職能治療組'},
+  {c:'5131',n:'復健部-語言治療組',l:'5131-復健部-語言治療組',s:'51315131-復健部-語言治療組'},
+  {c:'5200',n:'放射診斷科',l:'5200-放射診斷科',s:'52005200-放射診斷科'},
+  {c:'5210',n:'介入性放射科',l:'5210-介入性放射科',s:'52105210-介入性放射科'},
+  {c:'5211',n:'放射診斷科-行政服務組',l:'5211-放射診斷科-行政服務組',s:'52115211-放射診斷科-行政服務組'},
+  {c:'5213',n:'放射診斷科-一般特殊血管攝影組',l:'5213-放射診斷科-一般特殊血管攝影組',s:'52135213-放射診斷科-一般特殊血管攝影組'},
+  {c:'5214',n:'放射診斷科-放射影像護理組',l:'5214-放射診斷科-放射影像護理組',s:'52145214-放射診斷科-放射影像護理組'},
+  {c:'5215',n:'放射診斷科-急重症影像組',l:'5215-放射診斷科-急重症影像組',s:'52155215-放射診斷科-急重症影像組'},
+  {c:'5216',n:'放射診斷科-電腦斷層磁振造影組',l:'5216-放射診斷科-電腦斷層磁振造影組',s:'52165216-放射診斷科-電腦斷層磁振造影組'},
+  {c:'5220',n:'神經放射科',l:'5220-神經放射科',s:'52205220-神經放射科'},
+  {c:'5231',n:'放射診斷科-超音波乳房影像骨質密度組',l:'5231-放射診斷科-超音波乳房影像骨質密度組',s:'52315231-放射診斷科-超音波乳房影像骨質密度組'},
+  {c:'5299',n:'影像醫學部',l:'5299-影像醫學部',s:'52995299-影像醫學部'},
+  {c:'5300',n:'解剖病理科',l:'5300-解剖病理科',s:'53005300-解剖病理科'},
+  {c:'5310',n:'解剖病理科-組織組',l:'5310-解剖病理科-組織組',s:'53105310-解剖病理科-組織組'},
+  {c:'5320',n:'細胞病理科',l:'5320-細胞病理科',s:'53205320-細胞病理科'},
+  {c:'5340',n:'分子病理科',l:'5340-分子病理科',s:'53405340-分子病理科'},
+  {c:'5398',n:'病理檢驗科',l:'5398-病理檢驗科',s:'53985398-病理檢驗科'},
+  {c:'5399',n:'病理部',l:'5399-病理部',s:'53995399-病理部'},
+  {c:'539A',n:'病理中心',l:'539A-病理中心',s:'539a539a-病理中心'},
+  {c:'5400',n:'臨床病理部',l:'5400-臨床病理部',s:'54005400-臨床病理部'},
+  {c:'5410',n:'臨床病理部-細菌組',l:'5410-臨床病理部-細菌組',s:'54105410-臨床病理部-細菌組'},
+  {c:'5412',n:'臨床病理部-生化血清組',l:'5412-臨床病理部-生化血清組',s:'54125412-臨床病理部-生化血清組'},
+  {c:'5420',n:'臨床病理部-血液組',l:'5420-臨床病理部-血液組',s:'54205420-臨床病理部-血液組'},
+  {c:'5430',n:'臨床病理部-血庫組',l:'5430-臨床病理部-血庫組',s:'54305430-臨床病理部-血庫組'},
+  {c:'5440',n:'臨床病理部-鏡檢組',l:'5440-臨床病理部-鏡檢組',s:'54405440-臨床病理部-鏡檢組'},
+  {c:'5450',n:'臨床病理部-生化免疫組',l:'5450-臨床病理部-生化免疫組',s:'54505450-臨床病理部-生化免疫組'},
+  {c:'5460',n:'臨床病理部-特殊檢驗組',l:'5460-臨床病理部-特殊檢驗組',s:'54605460-臨床病理部-特殊檢驗組'},
+  {c:'5470',n:'臨床病理部-臨床服務組',l:'5470-臨床病理部-臨床服務組',s:'54705470-臨床病理部-臨床服務組'},
+  {c:'5480',n:'精準醫學中心',l:'5480-精準醫學中心',s:'54805480-精準醫學中心'},
+  {c:'548A',n:'精準醫學核心實驗室',l:'548A-精準醫學核心實驗室',s:'548a548a-精準醫學核心實驗室'},
+  {c:'5500',n:'藥劑部',l:'5500-藥劑部',s:'55005500-藥劑部'},
+  {c:'5550',n:'藥劑科-中藥局',l:'5550-藥劑科-中藥局',s:'55505550-藥劑科-中藥局'},
+  {c:'5570',n:'藥劑部-樹林院區',l:'5570-藥劑部-樹林院區',s:'55705570-藥劑部-樹林院區'},
+  {c:'5600',n:'營養科',l:'5600-營養科',s:'56005600-營養科'},
+  {c:'5700',n:'放射腫瘤部(科)',l:'5700-放射腫瘤部(科)',s:'57005700-放射腫瘤部(科)'},
+  {c:'5800',n:'核子醫學科',l:'5800-核子醫學科',s:'58005800-核子醫學科'},
+  {c:'5801',n:'核醫RIA',l:'5801-核醫RIA',s:'58015801-核醫ria'},
+  {c:'5900',n:'高壓氧科',l:'5900-高壓氧科',s:'59005900-高壓氧科'},
+  {c:'7000',n:'醫療部',l:'7000-醫療部',s:'70007000-醫療部'},
+  {c:'7001',n:'癌症中心',l:'7001-癌症中心',s:'70017001-癌症中心'},
+  {c:'7004',n:'大腸直腸癌治療組運作基金',l:'7004-大腸直腸癌治療組運作基金',s:'70047004-大腸直腸癌治療組運作基金'},
+  {c:'7006',n:'婦癌治療組',l:'7006-婦癌治療組',s:'70067006-婦癌治療組'},
+  {c:'7010',n:'醫務祕書室',l:'7010-醫務祕書室',s:'70107010-醫務祕書室'},
+  {c:'7020',n:'國際事務室',l:'7020-國際事務室',s:'70207020-國際事務室'},
+  {c:'7030',n:'遺傳暨罕見疾病中心',l:'7030-遺傳暨罕見疾病中心',s:'70307030-遺傳暨罕見疾病中心'},
+  {c:'7040',n:'細胞治療中心',l:'7040-細胞治療中心',s:'70407040-細胞治療中心'},
+  {c:'7050',n:'整合醫療中心',l:'7050-整合醫療中心',s:'70507050-整合醫療中心'},
+  {c:'7100',n:'中醫部',l:'7100-中醫部',s:'71007100-中醫部'},
+  {c:'7300',n:'內科部',l:'7300-內科部',s:'73007300-內科部'},
+  {c:'7301',n:'檢查室',l:'7301-檢查室',s:'73017301-檢查室'},
+  {c:'7302',n:'感染科',l:'7302-感染科',s:'73027302-感染科'},
+  {c:'7303',n:'老年醫學科',l:'7303-老年醫學科',s:'73037303-老年醫學科'},
+  {c:'7304',n:'全人醫療科',l:'7304-全人醫療科',s:'73047304-全人醫療科'},
+  {c:'730A',n:'感染科-教學門診',l:'730A-感染科-教學門診',s:'730a730a-感染科-教學門診'},
+  {c:'730m',n:'心血管中心',l:'730m-心血管中心',s:'730m730m-心血管中心'},
+  {c:'7310',n:'一般內科',l:'7310-一般內科',s:'73107310-一般內科'},
+  {c:'7311',n:'一般內科',l:'7311-一般內科',s:'73117311-一般內科'},
+  {c:'7320',n:'心臟血管內科',l:'7320-心臟血管內科',s:'73207320-心臟血管內科'},
+  {c:'7329',n:'心導管室',l:'7329-心導管室',s:'73297329-心導管室'},
+  {c:'7330',n:'神經內科',l:'7330-神經內科',s:'73307330-神經內科'},
+  {c:'7340',n:'腎臟科',l:'7340-腎臟科',s:'73407340-腎臟科'},
+  {c:'7346',n:'血液透析室(舊)',l:'7346-血液透析室(舊)',s:'73467346-血液透析室(舊)'},
+  {c:'7347',n:'血液透析室(新)',l:'7347-血液透析室(新)',s:'73477347-血液透析室(新)'},
+  {c:'7348',n:'腹膜透析室',l:'7348-腹膜透析室',s:'73487348-腹膜透析室'},
+  {c:'734A',n:'腎臟科教學門診',l:'734A-腎臟科教學門診',s:'734a734a-腎臟科教學門診'},
+  {c:'7350',n:'胃腸肝膽科',l:'7350-胃腸肝膽科',s:'73507350-胃腸肝膽科'},
+  {c:'7352',n:'肝膽科',l:'7352-肝膽科',s:'73527352-肝膽科'},
+  {c:'735A',n:'胃腸科教學門診',l:'735A-胃腸科教學門診',s:'735a735a-胃腸科教學門診'},
+  {c:'7360',n:'內分泌新陳代謝科',l:'7360-內分泌新陳代謝科',s:'73607360-內分泌新陳代謝科'},
+  {c:'736D',n:'慢性病管理中心',l:'736D-慢性病管理中心',s:'736d736d-慢性病管理中心'},
+  {c:'7370',n:'胸腔內科',l:'7370-胸腔內科',s:'73707370-胸腔內科'},
+  {c:'7380',n:'血液腫瘤科',l:'7380-血液腫瘤科',s:'73807380-血液腫瘤科'},
+  {c:'7385',n:'小兒血液腫瘤科',l:'7385-小兒血液腫瘤科',s:'73857385-小兒血液腫瘤科'},
+  {c:'7390',n:'風濕免疫科',l:'7390-風濕免疫科',s:'73907390-風濕免疫科'},
+  {c:'7400',n:'門診部',l:'7400-門診部',s:'74007400-門診部'},
+  {c:'7401',n:'檢查室',l:'7401-檢查室',s:'74017401-檢查室'},
+  {c:'7500',n:'外科部',l:'7500-外科部',s:'75007500-外科部'},
+  {c:'7501',n:'傷口照護中心',l:'7501-傷口照護中心',s:'75017501-傷口照護中心'},
+  {c:'750B',n:'一般醫學外科',l:'750B-一般醫學外科',s:'750b750b-一般醫學外科'},
+  {c:'750D',n:'大腸直腸外科',l:'750D-大腸直腸外科',s:'750d750d-大腸直腸外科'},
+  {c:'750G',n:'乳房醫學中心',l:'750G-乳房醫學中心',s:'750g750g-乳房醫學中心'},
+  {c:'7510',n:'一般及消化系外科',l:'7510-一般及消化系外科',s:'75107510-一般及消化系外科'},
+  {c:'7511',n:'門診手術',l:'7511-門診手術',s:'75117511-門診手術'},
+  {c:'7516',n:'外傷科',l:'7516-外傷科',s:'75167516-外傷科'},
+  {c:'7519',n:'一般外科-腸造口室',l:'7519-一般外科-腸造口室',s:'75197519-一般外科-腸造口室'},
+  {c:'7520',n:'神經外科',l:'7520-神經外科',s:'75207520-神經外科'},
+  {c:'7525',n:'神經外科-脊椎外科',l:'7525-神經外科-脊椎外科',s:'75257525-神經外科-脊椎外科'},
+  {c:'7527',n:'腦創傷中心',l:'7527-腦創傷中心',s:'75277527-腦創傷中心'},
+  {c:'7530',n:'泌尿外科',l:'7530-泌尿外科',s:'75307530-泌尿外科'},
+  {c:'7537',n:'泌尿腫瘤科',l:'7537-泌尿腫瘤科',s:'75377537-泌尿腫瘤科'},
+  {c:'7539',n:'碎石中心',l:'7539-碎石中心',s:'75397539-碎石中心'},
+  {c:'753B',n:'泌尿科示範門診',l:'753B-泌尿科示範門診',s:'753b753b-泌尿科示範門診'},
+  {c:'7540',n:'骨科部',l:'7540-骨科部',s:'75407540-骨科部'},
+  {c:'7545',n:'一般骨科',l:'7545-一般骨科',s:'75457545-一般骨科'},
+  {c:'7546',n:'手足骨外科',l:'7546-手足骨外科',s:'75467546-手足骨外科'},
+  {c:'7547',n:'兒童骨科',l:'7547-兒童骨科',s:'75477547-兒童骨科'},
+  {c:'7548',n:'運動傷害科',l:'7548-運動傷害科',s:'75487548-運動傷害科'},
+  {c:'754B',n:'兒童骨科遲緩兒評估門診',l:'754B-兒童骨科遲緩兒評估門診',s:'754b754b-兒童骨科遲緩兒評估門診'},
+  {c:'7550',n:'整形外科',l:'7550-整形外科',s:'75507550-整形外科'},
+  {c:'7555',n:'燙傷中心',l:'7555-燙傷中心',s:'75557555-燙傷中心'},
+  {c:'7560',n:'胸腔外科',l:'7560-胸腔外科',s:'75607560-胸腔外科'},
+  {c:'756A',n:'胸腔外科教學門診',l:'756A-胸腔外科教學門診',s:'756a756a-胸腔外科教學門診'},
+  {c:'7570',n:'小兒外科',l:'7570-小兒外科',s:'75707570-小兒外科'},
+  {c:'7580',n:'心臟血管外科',l:'7580-心臟血管外科',s:'75807580-心臟血管外科'},
+  {c:'7590',n:'移植醫學科',l:'7590-移植醫學科',s:'75907590-移植醫學科'},
+  {c:'75SC',n:'手術中心',l:'75SC-手術中心',s:'75sc75sc-手術中心'},
+  {c:'7600',n:'健康管理中心',l:'7600-健康管理中心',s:'76007600-健康管理中心'},
+  {c:'760P',n:'預防醫學科',l:'760P-預防醫學科',s:'760p760p-預防醫學科'},
+  {c:'7625',n:'複合式健檢',l:'7625-複合式健檢',s:'76257625-複合式健檢'},
+  {c:'7630',n:'健康檢查中心',l:'7630-健康檢查中心',s:'76307630-健康檢查中心'},
+  {c:'7640',n:'婦女保健中心',l:'7640-婦女保健中心',s:'76407640-婦女保健中心'},
+  {c:'7650',n:'健檢家醫科',l:'7650-健檢家醫科',s:'76507650-健檢家醫科'},
+  {c:'7655',n:'健檢門診',l:'7655-健檢門診',s:'76557655-健檢門診'},
+  {c:'7670',n:'睡眠中心',l:'7670-睡眠中心',s:'76707670-睡眠中心'},
+  {c:'7680',n:'醫學美容中心',l:'7680-醫學美容中心',s:'76807680-醫學美容中心'},
+  {c:'7691',n:'社區醫療轉銜中心/社區聯絡組',l:'7691-社區醫療轉銜中心/社區聯絡組',s:'76917691-社區醫療轉銜中心/社區聯絡組'},
+  {c:'7699',n:'社區醫療部',l:'7699-社區醫療部',s:'76997699-社區醫療部'},
+  {c:'7700',n:'綜科部',l:'7700-綜科部',s:'77007700-綜科部'},
+  {c:'7710',n:'兒科部',l:'7710-兒科部',s:'77107710-兒科部'},
+  {c:'7711',n:'健兒科',l:'7711-健兒科',s:'77117711-健兒科'},
+  {c:'7712',n:'健兒科二診',l:'7712-健兒科二診',s:'77127712-健兒科二診'},
+  {c:'7718',n:'新生兒科',l:'7718-新生兒科',s:'77187718-新生兒科'},
+  {c:'771B',n:'發展遲緩兒童聯合評估中心',l:'771B-發展遲緩兒童聯合評估中心',s:'771b771b-發展遲緩兒童聯合評估中心'},
+  {c:'771E',n:'兒童感染科',l:'771E-兒童感染科',s:'771e771e-兒童感染科'},
+  {c:'771F',n:'兒童心臟科',l:'771F-兒童心臟科',s:'771f771f-兒童心臟科'},
+  {c:'771G',n:'小兒遺傳科',l:'771G-小兒遺傳科',s:'771g771g-小兒遺傳科'},
+  {c:'771M',n:'兒童急重症科',l:'771M-兒童急重症科',s:'771m771m-兒童急重症科'},
+  {c:'771N',n:'兒童神經科',l:'771N-兒童神經科',s:'771n771n-兒童神經科'},
+  {c:'7720',n:'婦產部',l:'7720-婦產部',s:'77207720-婦產部'},
+  {c:'7724',n:'婦科',l:'7724-婦科',s:'77247724-婦科'},
+  {c:'7725',n:'生殖醫學科',l:'7725-生殖醫學科',s:'77257725-生殖醫學科'},
+  {c:'7726',n:'婦女泌尿科',l:'7726-婦女泌尿科',s:'77267726-婦女泌尿科'},
+  {c:'7728',n:'產科',l:'7728-產科',s:'77287728-產科'},
+  {c:'772A',n:'婦產科教學門診',l:'772A-婦產科教學門診',s:'772a772a-婦產科教學門診'},
+  {c:'7730',n:'牙醫部',l:'7730-牙醫部',s:'77307730-牙醫部'},
+  {c:'7731',n:'齒顎矯正科',l:'7731-齒顎矯正科',s:'77317731-齒顎矯正科'},
+  {c:'7732',n:'口腔顎面外科',l:'7732-口腔顎面外科',s:'77327732-口腔顎面外科'},
+  {c:'7733',n:'牙周病科',l:'7733-牙周病科',s:'77337733-牙周病科'},
+  {c:'7734',n:'牙髓病科',l:'7734-牙髓病科',s:'77347734-牙髓病科'},
+  {c:'7735',n:'贋復補綴牙科',l:'7735-贋復補綴牙科',s:'77357735-贋復補綴牙科'},
+  {c:'7736',n:'家庭牙科',l:'7736-家庭牙科',s:'77367736-家庭牙科'},
+  {c:'7737',n:'健牙門診',l:'7737-健牙門診',s:'77377737-健牙門診'},
+  {c:'773A',n:'口腔外科教學門診',l:'773A-口腔外科教學門診',s:'773a773a-口腔外科教學門診'},
+  {c:'773b',n:'牙科影像中心製作',l:'773b-牙科影像中心製作',s:'773b773b-牙科影像中心製作'},
+  {c:'773J',n:'兒童牙科',l:'773J-兒童牙科',s:'773j773j-兒童牙科'},
+  {c:'7740',n:'眼科(部)',l:'7740-眼科(部)',s:'77407740-眼科(部)'},
+  {c:'7745',n:'準分子雷射屈光手術特別門診',l:'7745-準分子雷射屈光手術特別門診',s:'77457745-準分子雷射屈光手術特別門診'},
+  {c:'774A',n:'眼科教學門診',l:'774A-眼科教學門診',s:'774a774a-眼科教學門診'},
+  {c:'774B',n:'眼科遲緩兒評估門診',l:'774B-眼科遲緩兒評估門診',s:'774b774b-眼科遲緩兒評估門診'},
+  {c:'774C',n:'雷射手術中心',l:'774C-雷射手術中心',s:'774c774c-雷射手術中心'},
+  {c:'774G',n:'眼科部-青光眼科',l:'774G-眼科部-青光眼科',s:'774g774g-眼科部-青光眼科'},
+  {c:'774H',n:'眼神經科',l:'774H-眼神經科',s:'774h774h-眼神經科'},
+  {c:'774J',n:'小兒斜弱視科',l:'774J-小兒斜弱視科',s:'774j774j-小兒斜弱視科'},
+  {c:'7750',n:'耳鼻喉科(部)',l:'7750-耳鼻喉科(部)',s:'77507750-耳鼻喉科(部)'},
+  {c:'775A',n:'耳鼻喉科教學門診',l:'775A-耳鼻喉科教學門診',s:'775a775a-耳鼻喉科教學門診'},
+  {c:'775B',n:'耳鼻喉科遲緩兒評門診',l:'775B-耳鼻喉科遲緩兒評門診',s:'775b775b-耳鼻喉科遲緩兒評門診'},
+  {c:'775c',n:'頭頸腫瘤科',l:'775c-頭頸腫瘤科',s:'775c775c-頭頸腫瘤科'},
+  {c:'775D',n:'耳鼻喉部-鼻科',l:'775D-耳鼻喉部-鼻科',s:'775d775d-耳鼻喉部-鼻科'},
+  {c:'775E',n:'耳鼻喉部-喉科',l:'775E-耳鼻喉部-喉科',s:'775e775e-耳鼻喉部-喉科'},
+  {c:'775F',n:'耳鼻喉部-小兒耳鼻喉科',l:'775F-耳鼻喉部-小兒耳鼻喉科',s:'775f775f-耳鼻喉部-小兒耳鼻喉科'},
+  {c:'775G',n:'耳鼻喉部-耳科',l:'775G-耳鼻喉部-耳科',s:'775g775g-耳鼻喉部-耳科'},
+  {c:'7760',n:'麻醉部',l:'7760-麻醉部',s:'77607760-麻醉部'},
+  {c:'7761',n:'麻醉部-恢復室',l:'7761-麻醉部-恢復室',s:'77617761-麻醉部-恢復室'},
+  {c:'7762',n:'疼痛科',l:'7762-疼痛科',s:'77627762-疼痛科'},
+  {c:'7765',n:'心臟麻醉科',l:'7765-心臟麻醉科',s:'77657765-心臟麻醉科'},
+  {c:'7767',n:'婦幼麻醉',l:'7767-婦幼麻醉',s:'77677767-婦幼麻醉'},
+  {c:'7770',n:'皮膚科',l:'7770-皮膚科',s:'77707770-皮膚科'},
+  {c:'7780',n:'家庭醫學部(科)',l:'7780-家庭醫學部(科)',s:'77807780-家庭醫學部(科)'},
+  {c:'7782',n:'健保成人預防保健',l:'7782-健保成人預防保健',s:'77827782-健保成人預防保健'},
+  {c:'7786',n:'門診健檢',l:'7786-門診健檢',s:'77867786-門診健檢'},
+  {c:'7787',n:'體檢部',l:'7787-體檢部',s:'77877787-體檢部'},
+  {c:'7788',n:'職業醫學科',l:'7788-職業醫學科',s:'77887788-職業醫學科'},
+  {c:'7789',n:'體檢部',l:'7789-體檢部',s:'77897789-體檢部'},
+  {c:'778B',n:'天壇家醫',l:'778B-天壇家醫',s:'778b778b-天壇家醫'},
+  {c:'778C',n:'家醫科示範門診',l:'778C-家醫科示範門診',s:'778c778c-家醫科示範門診'},
+  {c:'778E',n:'鴻佳家醫科',l:'778E-鴻佳家醫科',s:'778e778e-鴻佳家醫科'},
+  {c:'778G',n:'健康促進組',l:'778G-健康促進組',s:'778g778g-健康促進組'},
+  {c:'7790',n:'精神醫學部(科)',l:'7790-精神醫學部(科)',s:'77907790-精神醫學部(科)'},
+  {c:'7794',n:'鴻佳精神科',l:'7794-鴻佳精神科',s:'77947794-鴻佳精神科'},
+  {c:'7795',n:'啟智精神科',l:'7795-啟智精神科',s:'77957795-啟智精神科'},
+  {c:'779B',n:'精神科遲緩兒評估門診',l:'779B-精神科遲緩兒評估門診',s:'779b779b-精神科遲緩兒評估門診'},
+  {c:'779I',n:'官田養護中心精神科',l:'779I-官田養護中心精神科',s:'779i779i-官田養護中心精神科'},
+  {c:'7800',n:'加護醫學部',l:'7800-加護醫學部',s:'78007800-加護醫學部'},
+  {c:'7810',n:'呼吸治療科',l:'7810-呼吸治療科',s:'78107810-呼吸治療科'},
+  {c:'7811',n:'呼吸治療小組',l:'7811-呼吸治療小組',s:'78117811-呼吸治療小組'},
+  {c:'7900',n:'急診醫學部',l:'7900-急診醫學部',s:'79007900-急診醫學部'},
+  {c:'7909',n:'急診開立診斷書',l:'7909-急診開立診斷書',s:'79097909-急診開立診斷書'},
+  {c:'790A',n:'關子嶺假日救護站',l:'790A-關子嶺假日救護站',s:'790a790a-關子嶺假日救護站'},
+  {c:'7960',n:'急診醫學部高齡急診科',l:'7960-急診醫學部高齡急診科',s:'79607960-急診醫學部高齡急診科'},
+  {c:'8000',n:'院務會議',l:'8000-院務會議',s:'80008000-院務會議'},
+  {c:'8001',n:'人事評議委員會',l:'8001-人事評議委員會',s:'80018001-人事評議委員會'},
+  {c:'8002',n:'社會服務委員會',l:'8002-社會服務委員會',s:'80028002-社會服務委員會'},
+  {c:'8003',n:'職工福利委員會',l:'8003-職工福利委員會',s:'80038003-職工福利委員會'},
+  {c:'8004',n:'危機管理委員會',l:'8004-危機管理委員會',s:'80048004-危機管理委員會'},
+  {c:'8005',n:'財務委員會',l:'8005-財務委員會',s:'80058005-財務委員會'},
+  {c:'8006',n:'研究發展委員會',l:'8006-研究發展委員會',s:'80068006-研究發展委員會'},
+  {c:'8009',n:'宿舍管理委員會',l:'8009-宿舍管理委員會',s:'80098009-宿舍管理委員會'},
+  {c:'8010',n:'策略聯盟小組',l:'8010-策略聯盟小組',s:'80108010-策略聯盟小組'},
+  {c:'8011',n:'健康促進委員會',l:'8011-健康促進委員會',s:'80118011-健康促進委員會'},
+  {c:'8012',n:'員工健康促進推動小組',l:'8012-員工健康促進推動小組',s:'80128012-員工健康促進推動小組'},
+  {c:'8013',n:'管制藥品暨疼痛管理委員會',l:'8013-管制藥品暨疼痛管理委員會',s:'80138013-管制藥品暨疼痛管理委員會'},
+  {c:'8014',n:'資通安全推動委員會',l:'8014-資通安全推動委員會',s:'80148014-資通安全推動委員會'},
+  {c:'9000',n:'醫務會議',l:'9000-醫務會議',s:'90009000-醫務會議'},
+  {c:'9001',n:'病安暨醫品委員會',l:'9001-病安暨醫品委員會',s:'90019001-病安暨醫品委員會'},
+  {c:'9002',n:'醫學教育委員會',l:'9002-醫學教育委員會',s:'90029002-醫學教育委員會'},
+  {c:'9003',n:'病理組織委員會',l:'9003-病理組織委員會',s:'90039003-病理組織委員會'},
+  {c:'9004',n:'病歷委員會',l:'9004-病歷委員會',s:'90049004-病歷委員會'},
+  {c:'9005',n:'藥事委員會',l:'9005-藥事委員會',s:'90059005-藥事委員會'},
+  {c:'9007',n:'感染管制中心',l:'9007-感染管制中心',s:'90079007-感染管制中心'},
+  {c:'900A',n:'專案聘雇人員',l:'900A-專案聘雇人員',s:'900a900a-專案聘雇人員'},
+  {c:'900B',n:'國科會專案聘雇人員',l:'900B-國科會專案聘雇人員',s:'900b900b-國科會專案聘雇人員'},
+  {c:'9010',n:'急診委員會',l:'9010-急診委員會',s:'90109010-急診委員會'},
+  {c:'9011',n:'加護病房管理委員會',l:'9011-加護病房管理委員會',s:'90119011-加護病房管理委員會'},
+  {c:'9012',n:'出版暨數位溝通委員會',l:'9012-出版暨數位溝通委員會',s:'90129012-出版暨數位溝通委員會'},
+  {c:'9013',n:'學術倫理委員會',l:'9013-學術倫理委員會',s:'90139013-學術倫理委員會'},
+  {c:'9014',n:'分級醫療暨社區轉銜委員會',l:'9014-分級醫療暨社區轉銜委員會',s:'90149014-分級醫療暨社區轉銜委員會'},
+  {c:'9015',n:'南區職業衛生保健中心',l:'9015-南區職業衛生保健中心',s:'90159015-南區職業衛生保健中心'},
+  {c:'9016',n:'社區健康營造中心',l:'9016-社區健康營造中心',s:'90169016-社區健康營造中心'},
+  {c:'9017',n:'癌症中心',l:'9017-癌症中心',s:'90179017-癌症中心'},
+  {c:'9018',n:'專利審查委員會',l:'9018-專利審查委員會',s:'90189018-專利審查委員會'},
+  {c:'9019',n:'醫學倫理委員會',l:'9019-醫學倫理委員會',s:'90199019-醫學倫理委員會'},
+  {c:'901A',n:'感染管制委員會',l:'901A-感染管制委員會',s:'901a901a-感染管制委員會'},
+  {c:'9020',n:'乳房篩檢中心',l:'9020-乳房篩檢中心',s:'90209020-乳房篩檢中心'},
+  {c:'9021',n:'病人安全委員會',l:'9021-病人安全委員會',s:'90219021-病人安全委員會'},
+  {c:'9022',n:'癌症委員會',l:'9022-癌症委員會',s:'90229022-癌症委員會'},
+  {c:'9023',n:'臨床試驗中心',l:'9023-臨床試驗中心',s:'90239023-臨床試驗中心'},
+  {c:'9024',n:'人體試驗委員會',l:'9024-人體試驗委員會',s:'90249024-人體試驗委員會'},
+  {c:'9025',n:'臨床資源委員會',l:'9025-臨床資源委員會',s:'90259025-臨床資源委員會'},
+  {c:'9027',n:'營養醫療委員會',l:'9027-營養醫療委員會',s:'90279027-營養醫療委員會'},
+  {c:'9030',n:'結核病委員會',l:'9030-結核病委員會',s:'90309030-結核病委員會'},
+  {c:'9031',n:'無痛醫療委員會',l:'9031-無痛醫療委員會',s:'90319031-無痛醫療委員會'},
+  {c:'9034',n:'生物安全會',l:'9034-生物安全會',s:'90349034-生物安全會'},
+  {c:'9035',n:'餐廚督導委員會',l:'9035-餐廚督導委員會',s:'90359035-餐廚督導委員會'},
+  {c:'9037',n:'臨床資訊發展委員會',l:'9037-臨床資訊發展委員會',s:'90379037-臨床資訊發展委員會'},
+  {c:'9038',n:'整合醫療暨出院準備服務委員會',l:'9038-整合醫療暨出院準備服務委員會',s:'90389038-整合醫療暨出院準備服務委員會'},
+  {c:'9039',n:'母嬰親善小組',l:'9039-母嬰親善小組',s:'90399039-母嬰親善小組'},
+  {c:'9040',n:'圖書館委員會',l:'9040-圖書館委員會',s:'90409040-圖書館委員會'},
+  {c:'9041',n:'器官捐贈暨移植委員會',l:'9041-器官捐贈暨移植委員會',s:'90419041-器官捐贈暨移植委員會'},
+  {c:'9042',n:'輻射防護委員會',l:'9042-輻射防護委員會',s:'90429042-輻射防護委員會'},
+  {c:'9043',n:'專科護理師執業委員會',l:'9043-專科護理師執業委員會',s:'90439043-專科護理師執業委員會'},
+  {c:'9044',n:'急診管理委員會',l:'9044-急診管理委員會',s:'90449044-急診管理委員會'},
+  {c:'9045',n:'移植委員會',l:'9045-移植委員會',s:'90459045-移植委員會'},
+  {c:'9046',n:'開刀房管理委員會',l:'9046-開刀房管理委員會',s:'90469046-開刀房管理委員會'},
+  {c:'9047',n:'安寧療護委員會',l:'9047-安寧療護委員會',s:'90479047-安寧療護委員會'},
+  {c:'9048',n:'輸血委員會',l:'9048-輸血委員會',s:'90489048-輸血委員會'},
+  {c:'9049',n:'關懷委員會',l:'9049-關懷委員會',s:'90499049-關懷委員會'},
+  {c:'9050',n:'外包品質管理委員會',l:'9050-外包品質管理委員會',s:'90509050-外包品質管理委員會'},
+  {c:'9051',n:'長期照護委員會',l:'9051-長期照護委員會',s:'90519051-長期照護委員會'},
+  {c:'9052',n:'醫學研究委員會',l:'9052-醫學研究委員會',s:'90529052-醫學研究委員會'},
+  {c:'9053',n:'疼痛管理委員會',l:'9053-疼痛管理委員會',s:'90539053-疼痛管理委員會'},
+  {c:'9054',n:'職業安全衛生委員會',l:'9054-職業安全衛生委員會',s:'90549054-職業安全衛生委員會'},
+  {c:'9057',n:'藝文關懷社',l:'9057-藝文關懷社',s:'90579057-藝文關懷社'},
+  {c:'9058',n:'性騷擾暨職場霸凌評議委員會',l:'9058-性騷擾暨職場霸凌評議委員會',s:'90589058-性騷擾暨職場霸凌評議委員會'},
+  {c:'9059',n:'藝文委員會',l:'9059-藝文委員會',s:'90599059-藝文委員會'},
+  {c:'9061',n:'DRG委員會',l:'9061-DRG委員會',s:'90619061-drg委員會'},
+  {c:'9062',n:'永續經營暨行政品質管理委員會',l:'9062-永續經營暨行政品質管理委員會',s:'90629062-永續經營暨行政品質管理委員會'},
+  {c:'9063',n:'衛材管理委員會',l:'9063-衛材管理委員會',s:'90639063-衛材管理委員會'},
+  {c:'9070',n:'品質管理部/品質管理中心',l:'9070-品質管理部/品質管理中心',s:'90709070-品質管理部/品質管理中心'},
+  {c:'9080',n:'電腦刀治療中心',l:'9080-電腦刀治療中心',s:'90809080-電腦刀治療中心'},
+  {c:'9090',n:'腦中風中心',l:'9090-腦中風中心',s:'90909090-腦中風中心'},
+  {c:'9091',n:'社會服務費',l:'9091-社會服務費',s:'90919091-社會服務費'},
+  {c:'9102',n:'人體試驗委員會',l:'9102-人體試驗委員會',s:'91029102-人體試驗委員會'},
+  {c:'9111',n:'幅射防護委員會',l:'9111-幅射防護委員會',s:'91119111-幅射防護委員會'},
+  {c:'9201',n:'電子病歷推動委員會',l:'9201-電子病歷推動委員會',s:'92019201-電子病歷推動委員會'},
+  {c:'9310',n:'緩和醫療中心',l:'9310-緩和醫療中心',s:'93109310-緩和醫療中心'},
+  {c:'931A',n:'緩和醫學科',l:'931A-緩和醫學科',s:'931a931a-緩和醫學科'},
+  {c:'9400',n:'深耕計畫辦公室',l:'9400-深耕計畫辦公室',s:'94009400-深耕計畫辦公室'},
+  {c:'9401',n:'深耕計畫A1組',l:'9401-深耕計畫A1組',s:'94019401-深耕計畫a1組'},
+  {c:'9402',n:'深耕計畫B2組',l:'9402-深耕計畫B2組',s:'94029402-深耕計畫b2組'},
+  {c:'A200',n:'樹林院區-行政室',l:'A200-樹林院區-行政室',s:'a200a200-樹林院區-行政室'},
+  {c:'A300',n:'樹林院區-醫務室',l:'A300-樹林院區-醫務室',s:'a300a300-樹林院區-醫務室'},
+  {c:'A350',n:'鴻佳精神科',l:'A350-鴻佳精神科',s:'a350a350-鴻佳精神科'},
+  {c:'B300',n:'南科診所',l:'B300-南科診所',s:'b300b300-南科診所'},
+  {c:'C300',n:'和平診所',l:'C300-和平診所',s:'c300c300-和平診所'},
+  {c:'D300',n:'居家護理所',l:'D300-居家護理所',s:'d300d300-居家護理所'},
+  {c:'D301',n:'居家護理組',l:'D301-居家護理組',s:'d301d301-居家護理組'},
+  {c:'E300',n:'奇美產後護理之家',l:'E300-奇美產後護理之家',s:'e300e300-奇美產後護理之家'},
+  {c:'F104',n:'社區整合型服務中心',l:'F104-社區整合型服務中心',s:'f104f104-社區整合型服務中心'},
+  {c:'F105',n:'失智共同照護中心',l:'F105-失智共同照護中心',s:'f105f105-失智共同照護中心'},
+  {c:'F121',n:'社區整合型服務中心下營區',l:'F121-社區整合型服務中心下營區',s:'f121f121-社區整合型服務中心下營區'},
+  {c:'F126',n:'社區整合型服務中心-佳里區',l:'F126-社區整合型服務中心-佳里區',s:'f126f126-社區整合型服務中心-佳里區'},
+  {c:'H300',n:'南科奇美醫院籌備處',l:'H300-南科奇美醫院籌備處',s:'h300h300-南科奇美醫院籌備處'},
+  {c:'S104',n:'醫療服務社',l:'S104-醫療服務社',s:'s104s104-醫療服務社'},
+  {c:'T300',n:'奇康診所',l:'T300-奇康診所',s:'t300t300-奇康診所'},
+  {c:'X921',n:'佳里奇美醫院-院長室',l:'X921-佳里奇美醫院-院長室',s:'x921x921-佳里奇美醫院-院長室'},
+  {c:'Y001',n:'青少年保健門診',l:'Y001-青少年保健門診',s:'y001y001-青少年保健門診'},
+  {c:'Y002',n:'無菸校園推展小組',l:'Y002-無菸校園推展小組',s:'y002y002-無菸校園推展小組'},
+  {c:'Y79D',n:'成癮防治科',l:'Y79D-成癮防治科',s:'y79dy79d-成癮防治科'},
+  {c:'Z200',n:'運動強化中心',l:'Z200-運動強化中心',s:'z200z200-運動強化中心'}
+];
+
+// 篩選出現有 Log 中出現過的單位（動態建立），方便快速選取
+function getLogUnits() {
+    const set = new Set();
+    allLogs.forEach(l => {
+        const { unit } = parseAuditDetail(l.detail);
+        if (unit) set.add(unit);
+    });
+    return [...set];
+}
+
+function buildUnitFilterHtml(kw) {
+    const q = (kw || '').toLowerCase().trim();
+    // 先列出 log 中實際出現的單位（若符合）
+    const logUnits = getLogUnits();
+    // 從完整清單搜尋
+    const matches = q
+        ? AUDIT_UNIT_LIST.filter(u => u.s.includes(q)).slice(0, 60)
+        : AUDIT_UNIT_LIST.filter(u => logUnits.includes(u.n)).concat(
+            AUDIT_UNIT_LIST.filter(u => !logUnits.includes(u.n))
+          ).slice(0, 60);
+
+    if (!matches.length) return '<div class="u-empty">無符合單位</div>';
+
+    return matches.map(u => {
+        const inLog = logUnits.includes(u.n);
+        const dot = inLog ? '<span style="color:#2a7a40;margin-right:4px;font-size:0.7rem;">●</span>' : '';
+        return `<div class="u-opt" onmousedown="selectUnitFilter('${u.n.replace(/'/g,"\\'")}')">${dot}<span class="u-code">${u.c}</span>${u.n.replace(u.c+'-','')}</div>`;
+    }).join('');
+}
+
+function filterUnitDropdown() {
+    const kw  = document.getElementById('f_unit').value;
+    const dd  = document.getElementById('f_unit_dropdown');
+    dd.innerHTML = buildUnitFilterHtml(kw);
+    dd.style.display = 'block';
+    applyFilter();   // 同步即時篩選
+}
+
+function showUnitFilterDropdown() {
+    const dd  = document.getElementById('f_unit_dropdown');
+    const kw  = document.getElementById('f_unit').value;
+    dd.innerHTML = buildUnitFilterHtml(kw);
+    dd.style.display = 'block';
+}
+
+function hideUnitFilterDropdown() {
+    setTimeout(() => {
+        document.getElementById('f_unit_dropdown').style.display = 'none';
+    }, 180);
+}
+
+function selectUnitFilter(name) {
+    document.getElementById('f_unit').value = name;
+    document.getElementById('f_unit_dropdown').style.display = 'none';
+    applyFilter();
+}
+</script>
+</body>
+</html>

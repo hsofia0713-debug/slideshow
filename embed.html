@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重要焦點公告 · 輪播嵌入</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* ── 重置 ── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 980px;
+            height: 250px;
+            overflow: hidden;
+            font-family: "Microsoft JhengHei", "Noto Sans TC", Arial, sans-serif;
+            background: transparent;
+        }
+
+        /* ── 輪播區塊 ── */
+        #carousel-wrap {
+            width: 980px;
+            height: 250px;
+            padding: 6px 36px;   /* 左右留給箭頭 */
+            overflow: hidden;
+        }
+
+        /* ── 卡片：固定高度配合 250px iframe ── */
+        .carousel-item-box {
+            height: 218px;           /* 250 - 上下padding - dots 空間 */
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            background: #f0ebe0;
+        }
+
+        .carousel-item-box img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        .carousel-item-box:hover img { transform: scale(1.04); }
+
+        .carousel-caption {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.72));
+            color: white;
+            padding: 18px 10px 7px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── 隱藏 dots（省高度空間）── */
+        .owl-theme .owl-dots { display: none; }
+
+        /* ── Owl nav arrows ── */
+        .owl-carousel .owl-nav button.owl-prev,
+        .owl-carousel .owl-nav button.owl-next {
+            width: 28px; height: 28px;
+            border-radius: 50% !important;
+            background: rgba(122,92,58,0.18) !important;
+            border: 1px solid rgba(122,92,58,0.28) !important;
+            color: #7a5c3a !important;
+            font-size: 11px !important;
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+            transition: all 0.15s;
+        }
+        .owl-carousel .owl-nav button.owl-prev { left: -30px; }
+        .owl-carousel .owl-nav button.owl-next { right: -30px; }
+        .owl-carousel .owl-nav button:hover {
+            background: #7a5c3a !important;
+            color: white !important;
+        }
+        .owl-carousel .owl-nav.disabled { display: none; }
+        .owl-stage-outer { padding: 2px 1px; overflow: hidden; }
+
+        /* ── 空狀態 ── */
+        #carousel_empty {
+            display: none;
+            text-align: center;
+            padding: 28px 0 20px;
+            color: #9a8870;
+            font-size: 0.88rem;
+        }
+
+        #carousel_empty i {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(122,92,58,0.2);
+        }
+
+        /* ── Lightbox ── */
+        #lightbox {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(20,12,5,0.82);
+            backdrop-filter: blur(10px);
+            z-index: 9000;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+            animation: lbIn 0.2s ease;
+        }
+        #lightbox.active { display: flex; }
+        @keyframes lbIn { from { opacity:0; } to { opacity:1; } }
+
+        .lb-inner {
+            position: relative;
+            max-width: 92vw; max-height: 90vh;
+            cursor: default;
+            animation: lbZoom 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes lbZoom {
+            from { opacity:0; transform:scale(0.88); }
+            to   { opacity:1; transform:scale(1); }
+        }
+        #lb_img {
+            display: block;
+            max-width: 92vw; max-height: 85vh;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            object-fit: contain;
+        }
+        .lb-close {
+            position: fixed; top: 16px; right: 20px;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white; font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 9001;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .lb-close:hover { background: rgba(255,255,255,0.28); transform: scale(1.1) rotate(90deg); }
+        #lb_caption {
+            margin-top: 10px; text-align: center;
+            color: rgba(255,255,255,0.7); font-size: 0.85rem;
+        }
+        .lb-open-btn {
+            position: absolute; bottom: 42px; right: 8px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white; font-size: 0.75rem;
+            padding: 4px 11px; border-radius: 20px;
+            cursor: pointer; display: flex; align-items: center; gap: 5px;
+            text-decoration: none; transition: background 0.2s;
+        }
+        .lb-open-btn:hover { background: rgba(255,255,255,0.28); }
+    </style>
+</head>
+<body>
+
+<div id="carousel-wrap">
+    <div id="div_owl" class="owl-carousel owl-theme"></div>
+    <div id="carousel_empty">
+        <i class="fas fa-images"></i>
+        <p>目前沒有焦點公告</p>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+    <button class="lb-close" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
+    <div class="lb-inner" onclick="event.stopPropagation()">
+        <img id="lb_img" src="" alt="">
+        <a id="lb_open_btn" class="lb-open-btn" href="#" target="_blank">
+            <i class="fas fa-external-link-alt"></i> 在新分頁開啟
+        </a>
+        <div id="lb_caption"></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<script>
+// ════════════════════════════════════════════
+//  設定區（可依需求修改）
+// ════════════════════════════════════════════
+
+// data.json 的位置（相對於 embed.html，或填絕對路徑）
+const DATA_URL = 'data.json';
+
+// 每幾秒自動刷新資料（0 = 不自動刷新）
+const AUTO_REFRESH_SEC = 60;
+
+// 顯示欄數（配合 980px 寬度，預設 3 欄）
+const DEFAULT_COLS = 3;
+
+// ════════════════════════════════════════════
+
+let owl;
+
+$(document).ready(function () {
+    initOwl();
+    loadData();
+    if (AUTO_REFRESH_SEC > 0) {
+        setInterval(loadData, AUTO_REFRESH_SEC * 1000);
+    }
+    // ESC 關閉燈箱
+    $(document).on('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+});
+
+function initOwl() {
+    owl = $('#div_owl').owlCarousel({
+        margin: 10,
+        autoplay: true,
+        autoplayTimeout: 3500,
+        smartSpeed: 600,
+        autoplayHoverPause: true,
+        dots: false,      // 省高度，改用左右箭頭
+        nav: true,
+        navText: [
+            '<i class="fas fa-chevron-left"></i>',
+            '<i class="fas fa-chevron-right"></i>'
+        ],
+        responsive: {
+            0:   { items: 1,            loop: false },
+            600: { items: 2,            loop: false },
+            900: { items: DEFAULT_COLS, loop: false }
+        }
+    });
+}
+
+function loadData() {
+    fetch(DATA_URL + '?t=' + Date.now())
+        .then(r => r.json())
+        .then(data => {
+            // 只取星號項目
+            const starred = data.filter(d => d.isStarred);
+
+            // 清除現有項目並重新載入
+            while (owl.find('.owl-item').length > 0) {
+                owl.trigger('remove.owl.carousel', [0]);
+            }
+
+            starred.forEach(item => addSlide(item));
+            owl.trigger('refresh.owl.carousel');
+
+            // 空狀態
+            if (starred.length === 0) {
+                $('#carousel_empty').show();
+                $('#div_owl').hide();
+            } else {
+                $('#carousel_empty').hide();
+                $('#div_owl').show();
+            }
+
+            // 自動調整 iframe 高度（通知上層頁面）
+            notifyHeight();
+        })
+        .catch(err => console.warn('embed: 無法讀取資料', err));
+}
+
+function addSlide(item) {
+    const titleEsc = item.title.replace(/'/g, "\\'");
+    const imgSrc   = item.imgPath || 'https://placehold.co/800x600/e8d8c0/7a5c3a?text=PDF+公告';
+    owl.trigger('add.owl.carousel', [`
+        <div class="item">
+            <div class="carousel-item-box" onclick="window.open('index.html','_blank')">
+                <img src="${imgSrc}" alt="${item.title}">
+                <div class="carousel-caption">${item.title}</div>
+            </div>
+        </div>
+    `]);
+}
+
+// ── 燈箱 ──
+function viewFile(path, caption) {
+    if (!path) return;
+    if (/\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(path)) {
+        document.getElementById('lb_img').src = path;
+        document.getElementById('lb_caption').textContent = caption || '';
+        document.getElementById('lb_open_btn').href = path;
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    } else {
+        window.open(path, '_blank');
+    }
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+    setTimeout(() => { document.getElementById('lb_img').src = ''; }, 250);
+}
+
+// ── 動態回報 iframe 高度給上層頁面（可讓對方自動撐高）──
+function notifyHeight() {
+    try {
+        const h = document.body.scrollHeight;
+        window.parent.postMessage({ type: 'cmmc-embed-height', height: h }, '*');
+    } catch(e) {}
+}
+
+window.addEventListener('load', notifyHeight);
+window.addEventListener('resize', notifyHeight);
+</script>
+</body>
+</html>
