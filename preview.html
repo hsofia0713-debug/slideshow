@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>輪播公告申請辦法</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.bunny.net/css?family=noto-sans-tc:400,500,700,800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    background: radial-gradient(circle at top left, #ffe7cf 0%, transparent 30%),
+                radial-gradient(circle at bottom right, #fff2df 0%, transparent 35%),
+                linear-gradient(135deg, #fffaf5 0%, #fff3e8 100%);
+    min-height: 100vh;
+    padding: 32px 28px 40px;
+    color: #5a3d25;
+  }
+
+  /* ── 標題區 ── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(226, 140, 71, 0.18);
+  }
+  .page-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #9a5b2e;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .page-subtitle {
+    font-size: 0.88rem;
+    color: #b07b52;
+    line-height: 1.6;
+  }
+
+  /* ── 提醒條 ── */
+  .notice-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(255, 241, 225, 0.7);
+    border: 1px solid rgba(226,160,100,0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.84rem;
+    color: #9b6338;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .notice-bar i { color: #e18c47; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── 項目列表 ── */
+  .rule-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .rule-item {
+    background: rgba(255, 250, 244, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(184, 132, 72, 0.08);
+    padding: 18px 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .rule-item:hover {
+    box-shadow: 0 8px 24px rgba(184, 132, 72, 0.14);
+    transform: translateY(-2px);
+  }
+
+  .rule-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #d67d3e;
+    flex-shrink: 0;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.8), 0 2px 8px rgba(212,154,101,0.1);
+  }
+
+  .rule-body { flex: 1; min-width: 0; }
+
+  .rule-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #9f6234;
+    margin-bottom: 8px;
+  }
+
+  .rule-points {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .rule-points li {
+    font-size: 0.84rem;
+    color: #7a604c;
+    line-height: 1.6;
+    padding-left: 14px;
+    position: relative;
+  }
+  .rule-points li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #d67d3e;
+    opacity: 0.6;
+  }
+
+  /* ── 附件說明（特殊卡片） ── */
+  .rule-note {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(180, 130, 90, 0.25);
+    font-size: 0.8rem;
+    color: #9c7d67;
+    line-height: 1.7;
+  }
+  .rule-note .note-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-bottom: 3px;
+  }
+  .rule-note i { color: #d6965c; flex-shrink: 0; font-size: 0.85rem; margin-top: 2px; }
+  .rule-note .remark {
+    margin-top: 6px;
+    font-size: 0.76rem;
+    opacity: 0.7;
+    padding-left: 2px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- 標題 -->
+  <div class="page-header">
+    <div class="page-title">輪播公告管理規範</div>
+    <div class="page-subtitle">為維護院內公告品質與資訊一致性<br>請各單位依規範申請輪播公告</div>
+  </div>
+
+  <!-- 提醒 -->
+  <div class="notice-bar">
+    <i class="bi bi-info-circle-fill"></i>
+    <span>所有輪播公告皆須經視聽中心主任同意後方可上架，管理單位保有最終調整與排程權限。</span>
+  </div>
+
+  <!-- 項目列表 -->
+  <div class="rule-list">
+
+    <div class="rule-item">
+      <div class="rule-icon"><i class="bi bi-check2-square"></i></div>
+      <div class="rule-body">
+        <div class="rule-title">申請原則</div>
+        <ul class="rule-points">
+          <li>內容需經視聽中心主任核准</li>
+          <li>未經同意內容不予上架</li>
+          <li>以院內公共資訊為主要內容</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rule-item">
+      <div class="rule-icon"><i class="bi bi-calendar-week"></i></div>
+      <div class="rule-body">
+        <div class="rule-title">播放期間</div>
+        <ul class="rule-points">
+          <li>一般公告播放期限為 1 週</li>
+          <li>特殊需求可申請延長</li>
+          <li>由管理單位統一安排版位</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rule-item">
+      <div class="rule-icon"><i class="bi bi-megaphone"></i></div>
+      <div class="rule-body">
+        <div class="rule-title">全院性公告</div>
+        <ul class="rule-points">
+          <li>全院公告將優先安排輪播</li>
+          <li>播放滿 1 個月後移至跨月公告區</li>
+          <li>仍可持續查閱歷史公告</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rule-item">
+      <div class="rule-icon"><i class="bi bi-file-earmark-text"></i></div>
+      <div class="rule-body">
+        <div class="rule-title">內容規範</div>
+        <ul class="rule-points">
+          <li>文字需清楚、簡潔且易讀</li>
+          <li>避免資訊過多造成閱讀負擔</li>
+          <li>不得涉及病人個資與隱私內容</li>
+          <li>圖片與素材需確認授權來源</li>
+        </ul>
+        <div class="rule-note">
+          <div class="note-row">
+            <i class="bi bi-image"></i>
+            <span>需提供：首頁圖圖檔（25X18cm）、如有公告細則請提供 PDF 檔（限 5MB 以內）、如需連結至網頁請提供網址</span>
+          </div>
+          <div class="note-row">
+            <i class="bi bi-cloud-arrow-up"></i>
+            <span>超過限制（限 5MB 以內）請改提供雲端連結</span>
+          </div>
+		  <div class="note-row">
+            <i class="bi-send"></i>
+            <span>檔案請寄到信箱｜e.news@mail.chimei.org.tw</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
